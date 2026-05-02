@@ -1,0 +1,10 @@
+<Project>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\..\Directory.Build.props" Condition="Exists('$(MSBuildThisFileDirectory)..\..\..\Directory.Build.props')" />
+  <Import Project="$(MSBuildThisFileDirectory)..\..\Directory.Build.props" Condition="Exists('$(MSBuildThisFileDirectory)..\..\Directory.Build.props')" />
+  <PropertyGroup>
+    <TargetFrameworks>net10.0</TargetFrameworks>
+    <ClientTargetFrameworks>net10.0</ClientTargetFrameworks>
+    <TestTargetFrameworks>net10.0</TestTargetFrameworks>
+    <SampleTargetFrameworks>net10.0</SampleTargetFrameworks>
+  </PropertyGroup>
+</Project>

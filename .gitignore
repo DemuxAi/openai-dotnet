@@ -201,3 +201,6 @@ codegen/emitter/temp/tsconfig.tsbuildinfo
 # Artifacts from the generator
 tspCodeModel.json
 Configuration.json
+
+# Local MSBuild preprocess/diagnostic dumps (e.g. /pp:out.xml)
+**/out.xml
