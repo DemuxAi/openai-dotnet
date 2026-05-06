@@ -3,6 +3,7 @@
 #nullable disable
 
 using System.ClientModel.Primitives;
+using System.Diagnostics.CodeAnalysis;
 
 namespace OpenAI.Responses
 {
@@ -44,6 +45,8 @@ namespace OpenAI.Responses
     [ModelReaderWriterBuildable(typeof(ImageGenerationTool))]
     [ModelReaderWriterBuildable(typeof(ImageGenerationToolInputImageMask))]
     [ModelReaderWriterBuildable(typeof(InternalCodeInterpreterToolCallItemParam))]
+    [ModelReaderWriterBuildable(typeof(InternalCompactResource))]
+    [ModelReaderWriterBuildable(typeof(InternalCompactResponseMethodPublicBody))]
     [ModelReaderWriterBuildable(typeof(InternalComparisonFilter))]
     [ModelReaderWriterBuildable(typeof(InternalCompoundFilter))]
     [ModelReaderWriterBuildable(typeof(InternalComputerActionClick))]
@@ -103,6 +106,9 @@ namespace OpenAI.Responses
     [ModelReaderWriterBuildable(typeof(InternalResponsesTextFormatText))]
     [ModelReaderWriterBuildable(typeof(InternalResponsesUserMessage))]
     [ModelReaderWriterBuildable(typeof(InternalResponsesUserMessageItemParam))]
+    [ModelReaderWriterBuildable(typeof(InternalResponseTextParam))]
+    [ModelReaderWriterBuildable(typeof(InternalTokenCountsBody))]
+    [ModelReaderWriterBuildable(typeof(InternalTokenCountsResource))]
     [ModelReaderWriterBuildable(typeof(InternalToolChoiceObject))]
     [ModelReaderWriterBuildable(typeof(InternalToolChoiceObjectCodeInterpreter))]
     [ModelReaderWriterBuildable(typeof(InternalToolChoiceObjectComputer))]
@@ -222,6 +228,7 @@ namespace OpenAI.Responses
     [ModelReaderWriterBuildable(typeof(WebSearchToolApproximateLocation))]
     [ModelReaderWriterBuildable(typeof(WebSearchToolFilters))]
     [ModelReaderWriterBuildable(typeof(WebSearchToolLocation))]
+    [Experimental("OPENAI001")]
     public partial class OpenAIResponsesContext : ModelReaderWriterContext
     {
     }
