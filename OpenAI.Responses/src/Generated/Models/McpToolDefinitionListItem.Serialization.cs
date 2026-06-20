@@ -7,12 +7,13 @@ using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
+using OpenAI;
 
 namespace OpenAI.Responses
 {
     public partial class McpToolDefinitionListItem : ResponseItem, IJsonModel<McpToolDefinitionListItem>
     {
-        internal McpToolDefinitionListItem() : this(InternalItemType.McpListTools, null, default, null, null, null)
+        internal McpToolDefinitionListItem() : this(ResponseItemKind.McpListTools, null, default, null, null, null)
         {
         }
 
@@ -37,7 +38,7 @@ namespace OpenAI.Responses
             switch (format)
             {
                 case "J":
-                    return ModelReaderWriter.Write(this, options, OpenAIResponsesContext.Default);
+                    return ModelReaderWriter.Write(this, options, OpenAIContext.Default);
                 default:
                     throw new FormatException($"The model {nameof(McpToolDefinitionListItem)} does not support writing '{options.Format}' format.");
             }
@@ -137,7 +138,7 @@ namespace OpenAI.Responses
             {
                 return null;
             }
-            InternalItemType kind = default;
+            ResponseItemKind kind = default;
             string id = default;
 #pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
             JsonPatch patch = new JsonPatch(data is null ? ReadOnlyMemory<byte>.Empty : data.ToMemory());
@@ -149,7 +150,7 @@ namespace OpenAI.Responses
             {
                 if (prop.NameEquals("type"u8))
                 {
-                    kind = new InternalItemType(prop.Value.GetString());
+                    kind = new ResponseItemKind(prop.Value.GetString());
                     continue;
                 }
                 if (prop.NameEquals("id"u8))
@@ -203,6 +204,10 @@ namespace OpenAI.Responses
             {
                 int propertyLength = "tools"u8.Length;
                 ReadOnlySpan<byte> currentSlice = local.Slice(propertyLength);
+                if (currentSlice.IsEmpty)
+                {
+                    return TryResolveToolDefinitionsArray(out value);
+                }
                 if (!currentSlice.TryGetIndex(out int index, out int bytesConsumed))
                 {
                     return false;
@@ -230,6 +235,34 @@ namespace OpenAI.Responses
                 return true;
             }
             return false;
+        }
+#pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+
+#pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+        private bool TryResolveToolDefinitionsArray(out JsonPatch.EncodedValue value)
+        {
+            value = default;
+            BinaryData data = ModelReaderWriter.Write(ActiveToolDefinitions(), ModelReaderWriterOptions.Json, OpenAIContext.Default);
+            JsonPatch tempPatch = new JsonPatch();
+            tempPatch.Set("$"u8, data.ToMemory().Span);
+            return tempPatch.TryGetEncodedValue("$"u8, out value);
+        }
+#pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+
+#pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+        private IEnumerable<McpToolDefinition> ActiveToolDefinitions()
+        {
+            if (!Optional.IsCollectionDefined(ToolDefinitions))
+            {
+                yield break;
+            }
+            for (int i = 0; i < ToolDefinitions.Count; i++)
+            {
+                if (!ToolDefinitions[i].Patch.IsRemoved("$"u8))
+                {
+                    yield return ToolDefinitions[i];
+                }
+            }
         }
 #pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
     }

@@ -6,12 +6,13 @@ using System;
 using System.ClientModel.Primitives;
 using System.Text;
 using System.Text.Json;
+using OpenAI;
 
 namespace OpenAI.Responses
 {
     public partial class CodeInterpreterTool : ResponseTool, IJsonModel<CodeInterpreterTool>
     {
-        internal CodeInterpreterTool() : this(InternalToolType.CodeInterpreter, default, null)
+        internal CodeInterpreterTool() : this(ResponseToolKind.CodeInterpreter, default, null)
         {
         }
 
@@ -36,7 +37,7 @@ namespace OpenAI.Responses
             switch (format)
             {
                 case "J":
-                    return ModelReaderWriter.Write(this, options, OpenAIResponsesContext.Default);
+                    return ModelReaderWriter.Write(this, options, OpenAIContext.Default);
                 default:
                     throw new FormatException($"The model {nameof(CodeInterpreterTool)} does not support writing '{options.Format}' format.");
             }
@@ -101,7 +102,7 @@ namespace OpenAI.Responses
             {
                 return null;
             }
-            InternalToolType kind = default;
+            ResponseToolKind kind = default;
 #pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
             JsonPatch patch = new JsonPatch(data is null ? ReadOnlyMemory<byte>.Empty : data.ToMemory());
 #pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
@@ -110,7 +111,7 @@ namespace OpenAI.Responses
             {
                 if (prop.NameEquals("type"u8))
                 {
-                    kind = new InternalToolType(prop.Value.GetString());
+                    kind = new ResponseToolKind(prop.Value.GetString());
                     continue;
                 }
                 if (prop.NameEquals("container"u8))

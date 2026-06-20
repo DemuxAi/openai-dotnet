@@ -6,6 +6,7 @@ using System;
 using System.ClientModel.Primitives;
 using System.Text;
 using System.Text.Json;
+using OpenAI;
 
 namespace OpenAI.Responses
 {
@@ -36,7 +37,7 @@ namespace OpenAI.Responses
             switch (format)
             {
                 case "J":
-                    return ModelReaderWriter.Write(this, options, OpenAIResponsesContext.Default);
+                    return ModelReaderWriter.Write(this, options, OpenAIContext.Default);
                 default:
                     throw new FormatException($"The model {nameof(InternalResponsesMessageItemParam)} does not support writing '{options.Format}' format.");
             }
@@ -44,7 +45,7 @@ namespace OpenAI.Responses
 
         BinaryData IPersistableModel<InternalResponsesMessageItemParam>.Write(ModelReaderWriterOptions options) => PersistableModelWriteCore(options);
 
-        InternalResponsesMessageItemParam IPersistableModel<InternalResponsesMessageItemParam>.Create(BinaryData data, ModelReaderWriterOptions options) => (InternalUnknownResponsesMessageItemResourceItemParam)PersistableModelCreateCore(data, options);
+        InternalResponsesMessageItemParam IPersistableModel<InternalResponsesMessageItemParam>.Create(BinaryData data, ModelReaderWriterOptions options) => (InternalResponsesMessageItemParam)PersistableModelCreateCore(data, options);
 
         string IPersistableModel<InternalResponsesMessageItemParam>.GetFormatFromOptions(ModelReaderWriterOptions options) => "J";
 
@@ -77,7 +78,7 @@ namespace OpenAI.Responses
 #pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
         }
 
-        InternalResponsesMessageItemParam IJsonModel<InternalResponsesMessageItemParam>.Create(ref Utf8JsonReader reader, ModelReaderWriterOptions options) => (InternalUnknownResponsesMessageItemResourceItemParam)JsonModelCreateCore(ref reader, options);
+        InternalResponsesMessageItemParam IJsonModel<InternalResponsesMessageItemParam>.Create(ref Utf8JsonReader reader, ModelReaderWriterOptions options) => (InternalResponsesMessageItemParam)JsonModelCreateCore(ref reader, options);
 
         protected override InternalItemParam JsonModelCreateCore(ref Utf8JsonReader reader, ModelReaderWriterOptions options)
         {
@@ -96,7 +97,7 @@ namespace OpenAI.Responses
             {
                 return null;
             }
-            InternalItemType kind = default;
+            ResponseItemKind kind = default;
 #pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
             JsonPatch patch = new JsonPatch(data is null ? ReadOnlyMemory<byte>.Empty : data.ToMemory());
 #pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
@@ -105,7 +106,7 @@ namespace OpenAI.Responses
             {
                 if (prop.NameEquals("type"u8))
                 {
-                    kind = new InternalItemType(prop.Value.GetString());
+                    kind = new ResponseItemKind(prop.Value.GetString());
                     continue;
                 }
                 if (prop.NameEquals("role"u8))

@@ -4,13 +4,14 @@
 
 using System.ClientModel.Primitives;
 using System.Diagnostics.CodeAnalysis;
+using OpenAI;
 
 namespace OpenAI.Responses
 {
     [Experimental("OPENAI001")]
     public partial class ApplyPatchCallOutputItem : ResponseItem
     {
-        public ApplyPatchCallOutputItem(string callId, ApplyPatchCallOutputStatus status) : base(InternalItemType.ApplyPatchCallOutput)
+        public ApplyPatchCallOutputItem(string callId, ApplyPatchCallOutputStatus status) : base(ResponseItemKind.ApplyPatchCallOutput)
         {
             Argument.AssertNotNull(callId, nameof(callId));
 
@@ -19,7 +20,7 @@ namespace OpenAI.Responses
         }
 
 #pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
-        internal ApplyPatchCallOutputItem(InternalItemType kind, string id, in JsonPatch patch, string callId, ApplyPatchCallOutputStatus status, string output, string createdBy) : base(kind, id, patch)
+        internal ApplyPatchCallOutputItem(ResponseItemKind kind, string id, in JsonPatch patch, string callId, ApplyPatchCallOutputStatus status, string output, string createdBy) : base(kind, id, patch)
         {
             CallId = callId;
             Status = status;

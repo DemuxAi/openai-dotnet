@@ -6,6 +6,7 @@ using System;
 using System.ClientModel.Primitives;
 using System.Text;
 using System.Text.Json;
+using OpenAI;
 
 namespace OpenAI.Responses
 {
@@ -32,7 +33,7 @@ namespace OpenAI.Responses
             switch (format)
             {
                 case "J":
-                    return ModelReaderWriter.Write(this, options, OpenAIResponsesContext.Default);
+                    return ModelReaderWriter.Write(this, options, OpenAIContext.Default);
                 default:
                     throw new FormatException($"The model {nameof(ReferenceResponseItem)} does not support writing '{options.Format}' format.");
             }
@@ -92,7 +93,7 @@ namespace OpenAI.Responses
             {
                 return null;
             }
-            InternalItemType kind = default;
+            ResponseItemKind kind = default;
             string id = default;
 #pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
             JsonPatch patch = new JsonPatch(data is null ? ReadOnlyMemory<byte>.Empty : data.ToMemory());
@@ -101,7 +102,7 @@ namespace OpenAI.Responses
             {
                 if (prop.NameEquals("type"u8))
                 {
-                    kind = new InternalItemType(prop.Value.GetString());
+                    kind = new ResponseItemKind(prop.Value.GetString());
                     continue;
                 }
                 if (prop.NameEquals("id"u8))

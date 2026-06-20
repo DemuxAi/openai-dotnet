@@ -18,6 +18,7 @@ using OpenAI.Images;
 using OpenAI.Models;
 using OpenAI.Moderations;
 using OpenAI.Realtime;
+using OpenAI.Responses;
 using OpenAI.VectorStores;
 
 namespace OpenAI
@@ -453,7 +454,7 @@ namespace OpenAI
             return new ValidateGraderResponse(grader, additionalBinaryDataProperties: null);
         }
 
-        public static MessageCreationOptions MessageCreationOptions(MessageRole role = default, IEnumerable<MessageContent> content = default, IEnumerable<MessageCreationAttachment> attachments = default, IDictionary<string, string> metadata = default)
+        public static MessageCreationOptions MessageCreationOptions(Assistants.MessageRole role = default, IEnumerable<MessageContent> content = default, IEnumerable<MessageCreationAttachment> attachments = default, IDictionary<string, string> metadata = default)
         {
             content ??= new ChangeTrackingList<MessageContent>();
             attachments ??= new ChangeTrackingList<MessageCreationAttachment>();
@@ -469,7 +470,7 @@ namespace OpenAI
             return new MessageCreationAttachment(fileId, tools.ToList(), additionalBinaryDataProperties: null);
         }
 
-        public static ThreadMessage ThreadMessage(string id = default, DateTimeOffset createdAt = default, string threadId = default, MessageStatus status = default, MessageFailureDetails incompleteDetails = default, DateTimeOffset? completedAt = default, DateTimeOffset? incompleteAt = default, MessageRole role = default, IEnumerable<MessageContent> content = default, string assistantId = default, string runId = default, IEnumerable<MessageCreationAttachment> attachments = default, IReadOnlyDictionary<string, string> metadata = default)
+        public static ThreadMessage ThreadMessage(string id = default, DateTimeOffset createdAt = default, string threadId = default, Assistants.MessageStatus status = default, MessageFailureDetails incompleteDetails = default, DateTimeOffset? completedAt = default, DateTimeOffset? incompleteAt = default, Assistants.MessageRole role = default, IEnumerable<MessageContent> content = default, string assistantId = default, string runId = default, IEnumerable<MessageCreationAttachment> attachments = default, IReadOnlyDictionary<string, string> metadata = default)
         {
             content ??= new ChangeTrackingList<MessageContent>();
             attachments ??= new ChangeTrackingList<MessageCreationAttachment>();
@@ -587,6 +588,913 @@ namespace OpenAI
         public static RealtimeClientSecret RealtimeClientSecret(string value = default, DateTimeOffset expiresAt = default)
         {
             return new RealtimeClientSecret(value, expiresAt, default);
+        }
+
+        public static CreateResponseOptions CreateResponseOptions(IDictionary<string, string> metadata = default, float? temperature = default, int? topLogProbabilityCount = default, float? topP = default, string endUserId = default, string safetyIdentifier = default, ResponseServiceTier? serviceTier = default, string previousResponseId = default, string model = default, ResponseReasoningOptions reasoningOptions = default, bool? backgroundModeEnabled = default, int? maxOutputTokenCount = default, int? maxToolCallCount = default, ResponseTextOptions textOptions = default, IEnumerable<ResponseTool> tools = default, ResponseToolChoice toolChoice = default, ResponseTruncationMode? truncationMode = default, IEnumerable<ResponseItem> inputItems = default, IEnumerable<IncludedResponseProperty> includedProperties = default, bool? parallelToolCallsEnabled = default, bool? storedOutputEnabled = default, string instructions = default, bool? streamingEnabled = default, ResponseConversationOptions conversationOptions = default)
+        {
+            metadata ??= new ChangeTrackingDictionary<string, string>();
+            tools ??= new ChangeTrackingList<ResponseTool>();
+            inputItems ??= new ChangeTrackingList<ResponseItem>();
+            includedProperties ??= new ChangeTrackingList<IncludedResponseProperty>();
+
+            return new CreateResponseOptions(
+                metadata,
+                temperature,
+                topLogProbabilityCount,
+                topP,
+                endUserId,
+                safetyIdentifier,
+                serviceTier,
+                previousResponseId,
+                model,
+                reasoningOptions,
+                backgroundModeEnabled,
+                maxOutputTokenCount,
+                maxToolCallCount,
+                textOptions,
+                tools.ToList(),
+                toolChoice,
+                truncationMode,
+                inputItems.ToList(),
+                includedProperties.ToList(),
+                parallelToolCallsEnabled,
+                storedOutputEnabled,
+                instructions,
+                streamingEnabled,
+                conversationOptions,
+                default);
+        }
+
+        public static ResponseTextOptions ResponseTextOptions(ResponseTextFormat textFormat = default)
+        {
+            return new ResponseTextOptions(textFormat, default);
+        }
+
+        public static ResponseTool ResponseTool(string kind = default)
+        {
+            return new InternalUnknownTool(new ResponseToolKind(kind), default);
+        }
+
+        public static FunctionTool FunctionTool(string functionName = default, string functionDescription = default, BinaryData functionParameters = default, bool? strictModeEnabled = default)
+        {
+            return new FunctionTool(
+                ResponseToolKind.Function,
+                default,
+                functionName,
+                functionDescription,
+                functionParameters,
+                strictModeEnabled);
+        }
+
+        public static FileSearchTool FileSearchTool(IEnumerable<string> vectorStoreIds = default, int? maxResultCount = default, FileSearchToolRankingOptions rankingOptions = default, BinaryData filters = default)
+        {
+            vectorStoreIds ??= new ChangeTrackingList<string>();
+
+            return new FileSearchTool(
+                ResponseToolKind.FileSearch,
+                default,
+                vectorStoreIds.ToList(),
+                maxResultCount,
+                rankingOptions,
+                filters);
+        }
+
+        public static FileSearchToolRankingOptions FileSearchToolRankingOptions(FileSearchToolRanker? ranker = default, float? scoreThreshold = default)
+        {
+            return new FileSearchToolRankingOptions(ranker, scoreThreshold, default);
+        }
+
+        public static ComputerTool ComputerTool(ComputerToolEnvironment environment = default, int displayWidth = default, int displayHeight = default)
+        {
+            return new ComputerTool(ResponseToolKind.ComputerUsePreview, default, environment, displayWidth, displayHeight);
+        }
+
+        public static WebSearchPreviewTool WebSearchPreviewTool(WebSearchToolLocation userLocation = default, WebSearchToolContextSize? searchContextSize = default)
+        {
+            return new WebSearchPreviewTool(ResponseToolKind.WebSearchPreview, default, userLocation, searchContextSize);
+        }
+
+        public static WebSearchTool WebSearchTool(WebSearchToolFilters filters = default, WebSearchToolLocation userLocation = default, WebSearchToolContextSize? searchContextSize = default)
+        {
+            return new WebSearchTool(ResponseToolKind.WebSearch, default, filters, userLocation, searchContextSize);
+        }
+
+        public static WebSearchToolFilters WebSearchToolFilters(IEnumerable<string> allowedDomains = default)
+        {
+            allowedDomains ??= new ChangeTrackingList<string>();
+
+            return new WebSearchToolFilters(allowedDomains.ToList(), default);
+        }
+
+        public static CodeInterpreterTool CodeInterpreterTool(CodeInterpreterToolContainer container = default)
+        {
+            return new CodeInterpreterTool(ResponseToolKind.CodeInterpreter, default, container);
+        }
+
+        public static ImageGenerationTool ImageGenerationTool(string model = default, ImageGenerationToolQuality? quality = default, ImageGenerationToolSize? size = default, ImageGenerationToolOutputFileFormat? outputFileFormat = default, int? outputCompressionFactor = default, ImageGenerationToolModerationLevel? moderationLevel = default, ImageGenerationToolBackground? background = default, ImageGenerationToolInputFidelity? inputFidelity = default, ImageGenerationToolInputImageMask inputImageMask = default, int? partialImageCount = default, ImageGenerationToolAction? action = default)
+        {
+            return new ImageGenerationTool(
+                ResponseToolKind.ImageGeneration,
+                default,
+                model,
+                quality,
+                size,
+                outputFileFormat,
+                outputCompressionFactor,
+                moderationLevel,
+                background,
+                inputFidelity,
+                inputImageMask,
+                partialImageCount,
+                action);
+        }
+
+        public static ImageGenerationToolInputImageMask ImageGenerationToolInputImageMask(string imageUri = default, string fileId = default)
+        {
+            return new ImageGenerationToolInputImageMask(imageUri, fileId, default);
+        }
+
+        public static McpTool McpTool(string serverLabel = default, Uri serverUri = default, McpToolConnectorId? connectorId = default, string authorizationToken = default, string serverDescription = default, IDictionary<string, string> headers = default, McpToolFilter allowedTools = default, McpToolCallApprovalPolicy toolCallApprovalPolicy = default)
+        {
+            headers ??= new ChangeTrackingDictionary<string, string>();
+
+            return new McpTool(
+                ResponseToolKind.Mcp,
+                default,
+                serverLabel,
+                serverUri,
+                connectorId,
+                authorizationToken,
+                serverDescription,
+                headers,
+                allowedTools,
+                toolCallApprovalPolicy);
+        }
+
+        public static McpToolFilter McpToolFilter(IEnumerable<string> toolNames = default, bool? isReadOnly = default)
+        {
+            toolNames ??= new ChangeTrackingList<string>();
+
+            return new McpToolFilter(toolNames.ToList(), isReadOnly, default);
+        }
+
+        public static ApplyPatchTool ApplyPatchTool()
+        {
+            return new ApplyPatchTool(ResponseToolKind.ApplyPatch, default);
+        }
+
+        public static ResponseMessageAnnotation ResponseMessageAnnotation(string kind = default)
+        {
+            return new InternalUnknownAnnotation(kind.ToResponseMessageAnnotationKind(), default);
+        }
+
+        public static FileCitationMessageAnnotation FileCitationMessageAnnotation(string fileId = default, int index = default, string filename = default)
+        {
+            return new FileCitationMessageAnnotation(ResponseMessageAnnotationKind.FileCitation, default, fileId, index, filename);
+        }
+
+        public static UriCitationMessageAnnotation UriCitationMessageAnnotation(Uri uri = default, int startIndex = default, int endIndex = default, string title = default)
+        {
+            return new UriCitationMessageAnnotation(
+                ResponseMessageAnnotationKind.UriCitation,
+                default,
+                uri,
+                startIndex,
+                endIndex,
+                title);
+        }
+
+        public static ContainerFileCitationMessageAnnotation ContainerFileCitationMessageAnnotation(string containerId = default, string fileId = default, int startIndex = default, int endIndex = default, string filename = default)
+        {
+            return new ContainerFileCitationMessageAnnotation(
+                ResponseMessageAnnotationKind.ContainerFileCitation,
+                default,
+                containerId,
+                fileId,
+                startIndex,
+                endIndex,
+                filename);
+        }
+
+        public static FilePathMessageAnnotation FilePathMessageAnnotation(string fileId = default, int index = default)
+        {
+            return new FilePathMessageAnnotation(ResponseMessageAnnotationKind.FilePath, default, fileId, index);
+        }
+
+        public static ResponseTokenLogProbabilityDetails ResponseTokenLogProbabilityDetails(string token = default, float logProbability = default, ReadOnlyMemory<byte>? utf8Bytes = default, IEnumerable<ResponseTokenTopLogProbabilityDetails> topLogProbabilities = default)
+        {
+            topLogProbabilities ??= new ChangeTrackingList<ResponseTokenTopLogProbabilityDetails>();
+
+            return new ResponseTokenLogProbabilityDetails(token, logProbability, utf8Bytes, topLogProbabilities.ToList(), default);
+        }
+
+        public static ResponseTokenTopLogProbabilityDetails ResponseTokenTopLogProbabilityDetails(string token = default, float logProbability = default, ReadOnlyMemory<byte>? utf8Bytes = default)
+        {
+            return new ResponseTokenTopLogProbabilityDetails(token, logProbability, utf8Bytes, default);
+        }
+
+        public static FileSearchCallResult FileSearchCallResult(string fileId = default, string text = default, string filename = default, IDictionary<string, BinaryData> attributes = default, float? score = default)
+        {
+            attributes ??= new ChangeTrackingDictionary<string, BinaryData>();
+
+            return new FileSearchCallResult(
+                fileId,
+                text,
+                filename,
+                attributes,
+                score,
+                default);
+        }
+
+        public static ComputerCallAction ComputerCallAction(string kind = default)
+        {
+            return new InternalUnknownComputerAction(kind.ToComputerCallActionKind(), default);
+        }
+
+        public static ComputerCallSafetyCheck ComputerCallSafetyCheck(string id = default, string code = default, string message = default)
+        {
+            return new ComputerCallSafetyCheck(id, code, message, default);
+        }
+
+        public static McpToolDefinition McpToolDefinition(string name = default, string description = default, BinaryData inputSchema = default, BinaryData annotations = default)
+        {
+            return new McpToolDefinition(name, description, inputSchema, annotations, default);
+        }
+
+        public static ResponseConversationOptions ResponseConversationOptions(string conversationId = default)
+        {
+            return new ResponseConversationOptions(conversationId, default);
+        }
+
+        public static ResponseResult ResponseResult(IDictionary<string, string> metadata = default, float? temperature = default, int? topLogProbabilityCount = default, float? topP = default, string endUserId = default, string safetyIdentifier = default, ResponseServiceTier? serviceTier = default, string previousResponseId = default, string model = default, ResponseReasoningOptions reasoningOptions = default, bool? backgroundModeEnabled = default, int? maxOutputTokenCount = default, int? maxToolCallCount = default, ResponseTextOptions textOptions = default, IEnumerable<ResponseTool> tools = default, ResponseToolChoice toolChoice = default, ResponseTruncationMode? truncationMode = default, string id = default, ResponseStatus? status = default, DateTimeOffset createdAt = default, ResponseError error = default, ResponseIncompleteStatusDetails incompleteStatusDetails = default, IEnumerable<ResponseItem> outputItems = default, IEnumerable<ResponseItem> instructions = default, ResponseTokenUsage usage = default, bool parallelToolCallsEnabled = default, ResponseConversationOptions conversationOptions = default)
+        {
+            metadata ??= new ChangeTrackingDictionary<string, string>();
+            tools ??= new ChangeTrackingList<ResponseTool>();
+            outputItems ??= new ChangeTrackingList<ResponseItem>();
+            instructions ??= new ChangeTrackingList<ResponseItem>();
+
+            return new ResponseResult(
+                metadata,
+                temperature,
+                topLogProbabilityCount,
+                topP,
+                endUserId,
+                safetyIdentifier,
+                serviceTier,
+                previousResponseId,
+                model,
+                reasoningOptions,
+                backgroundModeEnabled,
+                maxOutputTokenCount,
+                maxToolCallCount,
+                textOptions,
+                tools.ToList(),
+                toolChoice,
+                truncationMode,
+                id,
+                "response",
+                status,
+                createdAt,
+                error,
+                incompleteStatusDetails,
+                outputItems.ToList(),
+                instructions.ToList(),
+                usage,
+                parallelToolCallsEnabled,
+                conversationOptions,
+                default);
+        }
+
+        public static ResponseError ResponseError(ResponseErrorCode code = default, string message = default, string @param = default, string kind = default)
+        {
+            return new ResponseError(code, message, @param, kind, default);
+        }
+
+        public static ResponseIncompleteStatusDetails ResponseIncompleteStatusDetails(ResponseIncompleteStatusReason? reason = default)
+        {
+            return new ResponseIncompleteStatusDetails(reason, default);
+        }
+
+        public static ResponseItem ResponseItem(string kind = default, string id = default)
+        {
+            return new InternalUnknownItemResource(new ResponseItemKind(kind), id, default);
+        }
+
+        public static McpToolCallApprovalResponseItem McpToolCallApprovalResponseItem(string id = default, string approvalRequestId = default, bool approved = default, string reason = default)
+        {
+            return new McpToolCallApprovalResponseItem(
+                ResponseItemKind.McpApprovalResponse,
+                id,
+                default,
+                approvalRequestId,
+                approved,
+                reason);
+        }
+
+        public static ComputerCallOutputResponseItem ComputerCallOutputResponseItem(string id = default, ComputerCallOutputStatus? status = default, string callId = default, IEnumerable<ComputerCallSafetyCheck> acknowledgedSafetyChecks = default, ComputerCallOutput output = default)
+        {
+            acknowledgedSafetyChecks ??= new ChangeTrackingList<ComputerCallSafetyCheck>();
+
+            return new ComputerCallOutputResponseItem(
+                ResponseItemKind.ComputerCallOutput,
+                id,
+                default,
+                status,
+                callId,
+                acknowledgedSafetyChecks.ToList(),
+                output);
+        }
+
+        public static FunctionCallResponseItem FunctionCallResponseItem(string id = default, FunctionCallStatus? status = default, string callId = default, string functionName = default, BinaryData functionArguments = default)
+        {
+            return new FunctionCallResponseItem(
+                ResponseItemKind.FunctionCall,
+                id,
+                default,
+                status,
+                callId,
+                functionName,
+                functionArguments);
+        }
+
+        public static FunctionCallOutputResponseItem FunctionCallOutputResponseItem(string id = default, FunctionCallOutputStatus? status = default, string callId = default, string functionOutput = default)
+        {
+            return new FunctionCallOutputResponseItem(
+                ResponseItemKind.FunctionCallOutput,
+                id,
+                default,
+                status,
+                callId,
+                functionOutput);
+        }
+
+        public static FileSearchCallResponseItem FileSearchCallResponseItem(string id = default, FileSearchCallStatus? status = default, IEnumerable<string> queries = default, IEnumerable<FileSearchCallResult> results = default)
+        {
+            queries ??= new ChangeTrackingList<string>();
+            results ??= new ChangeTrackingList<FileSearchCallResult>();
+
+            return new FileSearchCallResponseItem(
+                ResponseItemKind.FileSearchCall,
+                id,
+                default,
+                status,
+                queries.ToList(),
+                results.ToList());
+        }
+
+        public static ComputerCallResponseItem ComputerCallResponseItem(string id = default, ComputerCallStatus? status = default, string callId = default, ComputerCallAction action = default, IEnumerable<ComputerCallSafetyCheck> pendingSafetyChecks = default)
+        {
+            pendingSafetyChecks ??= new ChangeTrackingList<ComputerCallSafetyCheck>();
+
+            return new ComputerCallResponseItem(
+                ResponseItemKind.ComputerCall,
+                id,
+                default,
+                status,
+                callId,
+                action,
+                pendingSafetyChecks.ToList());
+        }
+
+        public static WebSearchCallResponseItem WebSearchCallResponseItem(string id = default, WebSearchCallStatus? status = default, WebSearchAction action = default)
+        {
+            return new WebSearchCallResponseItem(ResponseItemKind.WebSearchCall, id, default, status, action);
+        }
+
+        public static ReasoningResponseItem ReasoningResponseItem(string id = default, ReasoningStatus? status = default, string encryptedContent = default, IEnumerable<ReasoningSummaryPart> summaryParts = default)
+        {
+            summaryParts ??= new ChangeTrackingList<ReasoningSummaryPart>();
+
+            return new ReasoningResponseItem(
+                ResponseItemKind.Reasoning,
+                id,
+                default,
+                status,
+                encryptedContent,
+                summaryParts.ToList());
+        }
+
+        public static ImageGenerationCallResponseItem ImageGenerationCallResponseItem(string id = default, ImageGenerationCallStatus? status = default, ImageGenerationToolAction? action = default, ImageGenerationToolBackground? background = default, ImageGenerationToolOutputFileFormat? outputFileFormat = default, ImageGenerationToolQuality? quality = default, ImageGenerationToolSize? size = default, string revisedPrompt = default, BinaryData imageResultBytes = default)
+        {
+            return new ImageGenerationCallResponseItem(
+                ResponseItemKind.ImageGenerationCall,
+                id,
+                default,
+                status,
+                action,
+                background,
+                outputFileFormat,
+                quality,
+                size,
+                revisedPrompt,
+                imageResultBytes);
+        }
+
+        public static CodeInterpreterCallResponseItem CodeInterpreterCallResponseItem(string id = default, CodeInterpreterCallStatus? status = default, string containerId = default, string code = default, IEnumerable<CodeInterpreterCallOutput> outputs = default)
+        {
+            outputs ??= new ChangeTrackingList<CodeInterpreterCallOutput>();
+
+            return new CodeInterpreterCallResponseItem(
+                ResponseItemKind.CodeInterpreterCall,
+                id,
+                default,
+                status,
+                containerId,
+                code,
+                outputs.ToList());
+        }
+
+        public static McpToolDefinitionListItem McpToolDefinitionListItem(string id = default, string serverLabel = default, IEnumerable<McpToolDefinition> toolDefinitions = default, BinaryData error = default)
+        {
+            toolDefinitions ??= new ChangeTrackingList<McpToolDefinition>();
+
+            return new McpToolDefinitionListItem(
+                ResponseItemKind.McpListTools,
+                id,
+                default,
+                serverLabel,
+                toolDefinitions.ToList(),
+                error);
+        }
+
+        public static McpToolCallApprovalRequestItem McpToolCallApprovalRequestItem(string id = default, string serverLabel = default, string toolName = default, BinaryData toolArguments = default)
+        {
+            return new McpToolCallApprovalRequestItem(
+                ResponseItemKind.McpApprovalRequest,
+                id,
+                default,
+                serverLabel,
+                toolName,
+                toolArguments);
+        }
+
+        public static McpToolCallItem McpToolCallItem(string id = default, string serverLabel = default, string toolName = default, BinaryData toolArguments = default, string toolOutput = default, BinaryData error = default)
+        {
+            return new McpToolCallItem(
+                ResponseItemKind.McpCall,
+                id,
+                default,
+                serverLabel,
+                toolName,
+                toolArguments,
+                toolOutput,
+                error);
+        }
+
+        public static ApplyPatchCallItem ApplyPatchCallItem(string id = default, string callId = default, ApplyPatchCallStatus? status = default, ApplyPatchOperation operation = default, string createdBy = default)
+        {
+            return new ApplyPatchCallItem(
+                ResponseItemKind.ApplyPatchCall,
+                id,
+                default,
+                callId,
+                status,
+                operation,
+                createdBy);
+        }
+
+        public static ApplyPatchCallOutputItem ApplyPatchCallOutputItem(string id = default, string callId = default, ApplyPatchCallOutputStatus status = default, string output = default, string createdBy = default)
+        {
+            return new ApplyPatchCallOutputItem(
+                ResponseItemKind.ApplyPatchCallOutput,
+                id,
+                default,
+                callId,
+                status,
+                output,
+                createdBy);
+        }
+
+        public static ReferenceResponseItem ReferenceResponseItem(string id = default)
+        {
+            return new ReferenceResponseItem(ResponseItemKind.ItemReference, id, default);
+        }
+
+        public static ResponseTokenUsage ResponseTokenUsage(int inputTokenCount = default, ResponseInputTokenUsageDetails inputTokenDetails = default, int outputTokenCount = default, ResponseOutputTokenUsageDetails outputTokenDetails = default, int totalTokenCount = default)
+        {
+            return new ResponseTokenUsage(
+                inputTokenCount,
+                inputTokenDetails,
+                outputTokenCount,
+                outputTokenDetails,
+                totalTokenCount,
+                default);
+        }
+
+        public static ResponseInputTokenUsageDetails ResponseInputTokenUsageDetails(int cachedTokenCount = default)
+        {
+            return new ResponseInputTokenUsageDetails(cachedTokenCount, default);
+        }
+
+        public static ResponseOutputTokenUsageDetails ResponseOutputTokenUsageDetails(int reasoningTokenCount = default)
+        {
+            return new ResponseOutputTokenUsageDetails(reasoningTokenCount, default);
+        }
+
+        public static StreamingResponseUpdate StreamingResponseUpdate(string kind = default, int sequenceNumber = default)
+        {
+            return new InternalUnknownResponseStreamEvent(new StreamingResponseUpdateKind(kind), sequenceNumber, default);
+        }
+
+        public static StreamingResponseCodeInterpreterCallCodeDeltaUpdate StreamingResponseCodeInterpreterCallCodeDeltaUpdate(int sequenceNumber = default, int outputIndex = default, string itemId = default, string delta = default)
+        {
+            return new StreamingResponseCodeInterpreterCallCodeDeltaUpdate(
+                default,
+                sequenceNumber,
+                default,
+                outputIndex,
+                itemId,
+                delta);
+        }
+
+        public static StreamingResponseCodeInterpreterCallCodeDoneUpdate StreamingResponseCodeInterpreterCallCodeDoneUpdate(int sequenceNumber = default, int outputIndex = default, string itemId = default, string code = default)
+        {
+            return new StreamingResponseCodeInterpreterCallCodeDoneUpdate(
+                default,
+                sequenceNumber,
+                default,
+                outputIndex,
+                itemId,
+                code);
+        }
+
+        public static StreamingResponseCodeInterpreterCallCompletedUpdate StreamingResponseCodeInterpreterCallCompletedUpdate(int sequenceNumber = default, int outputIndex = default, string itemId = default)
+        {
+            return new StreamingResponseCodeInterpreterCallCompletedUpdate(default, sequenceNumber, default, outputIndex, itemId);
+        }
+
+        public static StreamingResponseCodeInterpreterCallInProgressUpdate StreamingResponseCodeInterpreterCallInProgressUpdate(int sequenceNumber = default, int outputIndex = default, string itemId = default)
+        {
+            return new StreamingResponseCodeInterpreterCallInProgressUpdate(default, sequenceNumber, default, outputIndex, itemId);
+        }
+
+        public static StreamingResponseCodeInterpreterCallInterpretingUpdate StreamingResponseCodeInterpreterCallInterpretingUpdate(int sequenceNumber = default, int outputIndex = default, string itemId = default)
+        {
+            return new StreamingResponseCodeInterpreterCallInterpretingUpdate(default, sequenceNumber, default, outputIndex, itemId);
+        }
+
+        public static StreamingResponseCompletedUpdate StreamingResponseCompletedUpdate(int sequenceNumber = default, ResponseResult response = default)
+        {
+            return new StreamingResponseCompletedUpdate(default, sequenceNumber, default, response);
+        }
+
+        public static StreamingResponseContentPartAddedUpdate StreamingResponseContentPartAddedUpdate(int sequenceNumber = default, string itemId = default, int outputIndex = default, int contentIndex = default, ResponseContentPart part = default)
+        {
+            return new StreamingResponseContentPartAddedUpdate(
+                default,
+                sequenceNumber,
+                default,
+                itemId,
+                outputIndex,
+                contentIndex,
+                part);
+        }
+
+        public static StreamingResponseContentPartDoneUpdate StreamingResponseContentPartDoneUpdate(int sequenceNumber = default, string itemId = default, int outputIndex = default, int contentIndex = default, ResponseContentPart part = default)
+        {
+            return new StreamingResponseContentPartDoneUpdate(
+                default,
+                sequenceNumber,
+                default,
+                itemId,
+                outputIndex,
+                contentIndex,
+                part);
+        }
+
+        public static StreamingResponseCreatedUpdate StreamingResponseCreatedUpdate(int sequenceNumber = default, ResponseResult response = default)
+        {
+            return new StreamingResponseCreatedUpdate(default, sequenceNumber, default, response);
+        }
+
+        public static StreamingResponseErrorUpdate StreamingResponseErrorUpdate(int sequenceNumber = default, string code = default, string message = default, string @param = default)
+        {
+            return new StreamingResponseErrorUpdate(
+                default,
+                sequenceNumber,
+                default,
+                code,
+                message,
+                @param);
+        }
+
+        public static StreamingResponseFileSearchCallCompletedUpdate StreamingResponseFileSearchCallCompletedUpdate(int sequenceNumber = default, int outputIndex = default, string itemId = default)
+        {
+            return new StreamingResponseFileSearchCallCompletedUpdate(default, sequenceNumber, default, outputIndex, itemId);
+        }
+
+        public static StreamingResponseFileSearchCallInProgressUpdate StreamingResponseFileSearchCallInProgressUpdate(int sequenceNumber = default, int outputIndex = default, string itemId = default)
+        {
+            return new StreamingResponseFileSearchCallInProgressUpdate(default, sequenceNumber, default, outputIndex, itemId);
+        }
+
+        public static StreamingResponseFileSearchCallSearchingUpdate StreamingResponseFileSearchCallSearchingUpdate(int sequenceNumber = default, int outputIndex = default, string itemId = default)
+        {
+            return new StreamingResponseFileSearchCallSearchingUpdate(default, sequenceNumber, default, outputIndex, itemId);
+        }
+
+        public static StreamingResponseFunctionCallArgumentsDeltaUpdate StreamingResponseFunctionCallArgumentsDeltaUpdate(int sequenceNumber = default, string itemId = default, int outputIndex = default, BinaryData delta = default)
+        {
+            return new StreamingResponseFunctionCallArgumentsDeltaUpdate(
+                default,
+                sequenceNumber,
+                default,
+                itemId,
+                outputIndex,
+                delta);
+        }
+
+        public static StreamingResponseFunctionCallArgumentsDoneUpdate StreamingResponseFunctionCallArgumentsDoneUpdate(int sequenceNumber = default, string itemId = default, string functionName = default, int outputIndex = default, BinaryData functionArguments = default)
+        {
+            return new StreamingResponseFunctionCallArgumentsDoneUpdate(
+                default,
+                sequenceNumber,
+                default,
+                itemId,
+                functionName,
+                outputIndex,
+                functionArguments);
+        }
+
+        public static StreamingResponseInProgressUpdate StreamingResponseInProgressUpdate(int sequenceNumber = default, ResponseResult response = default)
+        {
+            return new StreamingResponseInProgressUpdate(default, sequenceNumber, default, response);
+        }
+
+        public static StreamingResponseFailedUpdate StreamingResponseFailedUpdate(int sequenceNumber = default, ResponseResult response = default)
+        {
+            return new StreamingResponseFailedUpdate(default, sequenceNumber, default, response);
+        }
+
+        public static StreamingResponseIncompleteUpdate StreamingResponseIncompleteUpdate(int sequenceNumber = default, ResponseResult response = default)
+        {
+            return new StreamingResponseIncompleteUpdate(default, sequenceNumber, default, response);
+        }
+
+        public static StreamingResponseOutputItemAddedUpdate StreamingResponseOutputItemAddedUpdate(int sequenceNumber = default, int outputIndex = default, ResponseItem item = default)
+        {
+            return new StreamingResponseOutputItemAddedUpdate(default, sequenceNumber, default, outputIndex, item);
+        }
+
+        public static StreamingResponseOutputItemDoneUpdate StreamingResponseOutputItemDoneUpdate(int sequenceNumber = default, int outputIndex = default, ResponseItem item = default)
+        {
+            return new StreamingResponseOutputItemDoneUpdate(default, sequenceNumber, default, outputIndex, item);
+        }
+
+        public static StreamingResponseReasoningSummaryPartAddedUpdate StreamingResponseReasoningSummaryPartAddedUpdate(int sequenceNumber = default, string itemId = default, int outputIndex = default, int summaryIndex = default, ReasoningSummaryPart part = default)
+        {
+            return new StreamingResponseReasoningSummaryPartAddedUpdate(
+                default,
+                sequenceNumber,
+                default,
+                itemId,
+                outputIndex,
+                summaryIndex,
+                part);
+        }
+
+        public static StreamingResponseReasoningSummaryPartDoneUpdate StreamingResponseReasoningSummaryPartDoneUpdate(int sequenceNumber = default, string itemId = default, int outputIndex = default, int summaryIndex = default, ReasoningSummaryPart part = default)
+        {
+            return new StreamingResponseReasoningSummaryPartDoneUpdate(
+                default,
+                sequenceNumber,
+                default,
+                itemId,
+                outputIndex,
+                summaryIndex,
+                part);
+        }
+
+        public static StreamingResponseReasoningSummaryTextDeltaUpdate StreamingResponseReasoningSummaryTextDeltaUpdate(int sequenceNumber = default, string itemId = default, int outputIndex = default, int summaryIndex = default, string delta = default)
+        {
+            return new StreamingResponseReasoningSummaryTextDeltaUpdate(
+                default,
+                sequenceNumber,
+                default,
+                itemId,
+                outputIndex,
+                summaryIndex,
+                delta);
+        }
+
+        public static StreamingResponseReasoningSummaryTextDoneUpdate StreamingResponseReasoningSummaryTextDoneUpdate(int sequenceNumber = default, string itemId = default, int outputIndex = default, int summaryIndex = default, string text = default)
+        {
+            return new StreamingResponseReasoningSummaryTextDoneUpdate(
+                default,
+                sequenceNumber,
+                default,
+                itemId,
+                outputIndex,
+                summaryIndex,
+                text);
+        }
+
+        public static StreamingResponseReasoningTextDeltaUpdate StreamingResponseReasoningTextDeltaUpdate(int sequenceNumber = default, string itemId = default, int outputIndex = default, int contentIndex = default, string delta = default)
+        {
+            return new StreamingResponseReasoningTextDeltaUpdate(
+                default,
+                sequenceNumber,
+                default,
+                itemId,
+                outputIndex,
+                contentIndex,
+                delta);
+        }
+
+        public static StreamingResponseReasoningTextDoneUpdate StreamingResponseReasoningTextDoneUpdate(int sequenceNumber = default, string itemId = default, int outputIndex = default, int contentIndex = default, string text = default)
+        {
+            return new StreamingResponseReasoningTextDoneUpdate(
+                default,
+                sequenceNumber,
+                default,
+                itemId,
+                outputIndex,
+                contentIndex,
+                text);
+        }
+
+        public static StreamingResponseRefusalDeltaUpdate StreamingResponseRefusalDeltaUpdate(int sequenceNumber = default, string itemId = default, int outputIndex = default, int contentIndex = default, string delta = default)
+        {
+            return new StreamingResponseRefusalDeltaUpdate(
+                default,
+                sequenceNumber,
+                default,
+                itemId,
+                outputIndex,
+                contentIndex,
+                delta);
+        }
+
+        public static StreamingResponseRefusalDoneUpdate StreamingResponseRefusalDoneUpdate(int sequenceNumber = default, string itemId = default, int outputIndex = default, int contentIndex = default, string refusal = default)
+        {
+            return new StreamingResponseRefusalDoneUpdate(
+                default,
+                sequenceNumber,
+                default,
+                itemId,
+                outputIndex,
+                contentIndex,
+                refusal);
+        }
+
+        public static StreamingResponseOutputTextDeltaUpdate StreamingResponseOutputTextDeltaUpdate(int sequenceNumber = default, string itemId = default, int outputIndex = default, int contentIndex = default, string delta = default, IEnumerable<ResponseTokenLogProbabilityDetails> tokenLogProbabilities = default)
+        {
+            tokenLogProbabilities ??= new ChangeTrackingList<ResponseTokenLogProbabilityDetails>();
+
+            return new StreamingResponseOutputTextDeltaUpdate(
+                default,
+                sequenceNumber,
+                default,
+                itemId,
+                outputIndex,
+                contentIndex,
+                delta,
+                tokenLogProbabilities.ToList());
+        }
+
+        public static StreamingResponseOutputTextDoneUpdate StreamingResponseOutputTextDoneUpdate(int sequenceNumber = default, string itemId = default, int outputIndex = default, int contentIndex = default, string text = default, IEnumerable<ResponseTokenLogProbabilityDetails> tokenLogProbabilities = default)
+        {
+            tokenLogProbabilities ??= new ChangeTrackingList<ResponseTokenLogProbabilityDetails>();
+
+            return new StreamingResponseOutputTextDoneUpdate(
+                default,
+                sequenceNumber,
+                default,
+                itemId,
+                outputIndex,
+                contentIndex,
+                text,
+                tokenLogProbabilities.ToList());
+        }
+
+        public static StreamingResponseWebSearchCallCompletedUpdate StreamingResponseWebSearchCallCompletedUpdate(int sequenceNumber = default, int outputIndex = default, string itemId = default)
+        {
+            return new StreamingResponseWebSearchCallCompletedUpdate(default, sequenceNumber, default, outputIndex, itemId);
+        }
+
+        public static StreamingResponseWebSearchCallInProgressUpdate StreamingResponseWebSearchCallInProgressUpdate(int sequenceNumber = default, int outputIndex = default, string itemId = default)
+        {
+            return new StreamingResponseWebSearchCallInProgressUpdate(default, sequenceNumber, default, outputIndex, itemId);
+        }
+
+        public static StreamingResponseWebSearchCallSearchingUpdate StreamingResponseWebSearchCallSearchingUpdate(int sequenceNumber = default, int outputIndex = default, string itemId = default)
+        {
+            return new StreamingResponseWebSearchCallSearchingUpdate(default, sequenceNumber, default, outputIndex, itemId);
+        }
+
+        public static StreamingResponseImageGenerationCallCompletedUpdate StreamingResponseImageGenerationCallCompletedUpdate(int sequenceNumber = default, int outputIndex = default, string itemId = default)
+        {
+            return new StreamingResponseImageGenerationCallCompletedUpdate(default, sequenceNumber, default, outputIndex, itemId);
+        }
+
+        public static StreamingResponseImageGenerationCallGeneratingUpdate StreamingResponseImageGenerationCallGeneratingUpdate(int sequenceNumber = default, int outputIndex = default, string itemId = default)
+        {
+            return new StreamingResponseImageGenerationCallGeneratingUpdate(default, sequenceNumber, default, outputIndex, itemId);
+        }
+
+        public static StreamingResponseImageGenerationCallInProgressUpdate StreamingResponseImageGenerationCallInProgressUpdate(int sequenceNumber = default, int outputIndex = default, string itemId = default)
+        {
+            return new StreamingResponseImageGenerationCallInProgressUpdate(default, sequenceNumber, default, outputIndex, itemId);
+        }
+
+        public static StreamingResponseImageGenerationCallPartialImageUpdate StreamingResponseImageGenerationCallPartialImageUpdate(int sequenceNumber = default, int outputIndex = default, string itemId = default, int partialImageIndex = default, BinaryData partialImageBytes = default)
+        {
+            return new StreamingResponseImageGenerationCallPartialImageUpdate(
+                default,
+                sequenceNumber,
+                default,
+                outputIndex,
+                itemId,
+                partialImageIndex,
+                partialImageBytes);
+        }
+
+        public static StreamingResponseMcpCallArgumentsDeltaUpdate StreamingResponseMcpCallArgumentsDeltaUpdate(int sequenceNumber = default, int outputIndex = default, string itemId = default, BinaryData delta = default)
+        {
+            return new StreamingResponseMcpCallArgumentsDeltaUpdate(
+                default,
+                sequenceNumber,
+                default,
+                outputIndex,
+                itemId,
+                delta);
+        }
+
+        public static StreamingResponseMcpCallArgumentsDoneUpdate StreamingResponseMcpCallArgumentsDoneUpdate(int sequenceNumber = default, int outputIndex = default, string itemId = default, BinaryData toolArguments = default)
+        {
+            return new StreamingResponseMcpCallArgumentsDoneUpdate(
+                default,
+                sequenceNumber,
+                default,
+                outputIndex,
+                itemId,
+                toolArguments);
+        }
+
+        public static StreamingResponseMcpCallCompletedUpdate StreamingResponseMcpCallCompletedUpdate(int sequenceNumber = default, string itemId = default, int outputIndex = default)
+        {
+            return new StreamingResponseMcpCallCompletedUpdate(default, sequenceNumber, default, itemId, outputIndex);
+        }
+
+        public static StreamingResponseMcpCallFailedUpdate StreamingResponseMcpCallFailedUpdate(int sequenceNumber = default, string itemId = default, int outputIndex = default)
+        {
+            return new StreamingResponseMcpCallFailedUpdate(default, sequenceNumber, default, itemId, outputIndex);
+        }
+
+        public static StreamingResponseMcpCallInProgressUpdate StreamingResponseMcpCallInProgressUpdate(int sequenceNumber = default, int outputIndex = default, string itemId = default)
+        {
+            return new StreamingResponseMcpCallInProgressUpdate(default, sequenceNumber, default, outputIndex, itemId);
+        }
+
+        public static StreamingResponseMcpListToolsCompletedUpdate StreamingResponseMcpListToolsCompletedUpdate(int sequenceNumber = default, string itemId = default, int outputIndex = default)
+        {
+            return new StreamingResponseMcpListToolsCompletedUpdate(default, sequenceNumber, default, itemId, outputIndex);
+        }
+
+        public static StreamingResponseMcpListToolsFailedUpdate StreamingResponseMcpListToolsFailedUpdate(int sequenceNumber = default, string itemId = default, int outputIndex = default)
+        {
+            return new StreamingResponseMcpListToolsFailedUpdate(default, sequenceNumber, default, itemId, outputIndex);
+        }
+
+        public static StreamingResponseMcpListToolsInProgressUpdate StreamingResponseMcpListToolsInProgressUpdate(int sequenceNumber = default, string itemId = default, int outputIndex = default)
+        {
+            return new StreamingResponseMcpListToolsInProgressUpdate(default, sequenceNumber, default, itemId, outputIndex);
+        }
+
+        public static StreamingResponseOutputTextAnnotationAddedUpdate StreamingResponseOutputTextAnnotationAddedUpdate(int sequenceNumber = default, string itemId = default, int outputIndex = default, int contentIndex = default, int annotationIndex = default, ResponseMessageAnnotation annotation = default)
+        {
+            return new StreamingResponseOutputTextAnnotationAddedUpdate(
+                default,
+                sequenceNumber,
+                default,
+                itemId,
+                outputIndex,
+                contentIndex,
+                annotationIndex,
+                annotation);
+        }
+
+        public static StreamingResponseQueuedUpdate StreamingResponseQueuedUpdate(int sequenceNumber = default, ResponseResult response = default)
+        {
+            return new StreamingResponseQueuedUpdate(default, sequenceNumber, default, response);
+        }
+
+        public static ResponseDeletionResult ResponseDeletionResult(string responseId = default, bool deleted = default)
+        {
+            return new ResponseDeletionResult(responseId, "response.deleted", deleted, default);
+        }
+
+        public static ResponseItemCollectionPage ResponseItemCollectionPage(IEnumerable<ResponseItem> data = default, bool hasMore = default, string firstId = default, string lastId = default)
+        {
+            data ??= new ChangeTrackingList<ResponseItem>();
+
+            return new ResponseItemCollectionPage(
+                "list",
+                data.ToList(),
+                hasMore,
+                firstId,
+                lastId,
+                default);
         }
 
         public static ThreadCreationOptions ThreadCreationOptions(IEnumerable<MessageCreationOptions> internalMessages = default, ToolResources toolResources = default, IDictionary<string, string> metadata = default)
@@ -1174,6 +2082,11 @@ namespace OpenAI
             return new ContainerFileCollectionOptions(afterId, pageSizeLimit, order, additionalBinaryDataProperties: null);
         }
 
+        public static RealtimeLogProbabilityDetails RealtimeLogProbabilityDetails(string token = default, float logProbability = default, ReadOnlyMemory<byte> utf8Bytes = default)
+        {
+            return new RealtimeLogProbabilityDetails(token, logProbability, utf8Bytes, default);
+        }
+
         public static RealtimeMcpToolDefinition RealtimeMcpToolDefinition(string name = default, string description = default, BinaryData inputSchema = default, BinaryData annotations = default)
         {
             return new RealtimeMcpToolDefinition(name, description, inputSchema, annotations, default);
@@ -1213,11 +2126,6 @@ namespace OpenAI
         public static RealtimeMaxOutputTokenCount RealtimeMaxOutputTokenCount(RealtimeDefaultMaxOutputTokenCount? defaultMaxOutputTokenCount = default, int? customMaxOutputTokenCount = default)
         {
             return new RealtimeMaxOutputTokenCount(defaultMaxOutputTokenCount, customMaxOutputTokenCount, default);
-        }
-
-        public static RealtimeLogProbabilityDetails RealtimeLogProbabilityDetails(string token = default, float logProbability = default, ReadOnlyMemory<byte> utf8Bytes = default)
-        {
-            return new RealtimeLogProbabilityDetails(token, logProbability, utf8Bytes, default);
         }
 
         public static RealtimeTranscriptionInputTokenUsageDetails RealtimeTranscriptionInputTokenUsageDetails(int? textTokenCount = default, int? audioTokenCount = default)
@@ -1300,6 +2208,45 @@ namespace OpenAI
                 metadata,
                 inputItems.ToList(),
                 default);
+        }
+
+        public static ResponseItemCollectionOptions ResponseItemCollectionOptions(string responseId = default, string afterId = default, string beforeId = default, int? pageSizeLimit = default, ResponseItemCollectionOrder? order = default)
+        {
+            return new ResponseItemCollectionOptions(
+                responseId,
+                afterId,
+                beforeId,
+                pageSizeLimit,
+                order,
+                additionalBinaryDataProperties: null);
+        }
+
+        public static GetResponseOptions GetResponseOptions(string responseId = default, int? startingAfter = default, bool? includeObfuscation = default, IEnumerable<IncludedResponseProperty> includedProperties = default, bool? streamingEnabled = default)
+        {
+            includedProperties ??= new ChangeTrackingList<IncludedResponseProperty>();
+
+            return new GetResponseOptions(
+                responseId,
+                startingAfter,
+                includeObfuscation,
+                includedProperties.ToList(),
+                streamingEnabled,
+                default);
+        }
+
+        public static CustomMcpToolCallApprovalPolicy CustomMcpToolCallApprovalPolicy(McpToolFilter toolsAlwaysRequiringApproval = default, McpToolFilter toolsNeverRequiringApproval = default)
+        {
+            return new CustomMcpToolCallApprovalPolicy(toolsAlwaysRequiringApproval, toolsNeverRequiringApproval, default);
+        }
+
+        public static McpToolCallApprovalPolicy McpToolCallApprovalPolicy(GlobalMcpToolCallApprovalPolicy? globalPolicy = default, CustomMcpToolCallApprovalPolicy customPolicy = default)
+        {
+            return new McpToolCallApprovalPolicy(globalPolicy, customPolicy, default);
+        }
+
+        public static CodeInterpreterToolContainer CodeInterpreterToolContainer(string containerId = default, CodeInterpreterToolContainerConfiguration containerConfiguration = default)
+        {
+            return new CodeInterpreterToolContainer(containerId, containerConfiguration, default);
         }
     }
 }

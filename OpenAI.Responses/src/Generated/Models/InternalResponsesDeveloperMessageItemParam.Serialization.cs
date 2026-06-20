@@ -7,6 +7,7 @@ using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
+using OpenAI;
 
 namespace OpenAI.Responses
 {
@@ -37,7 +38,7 @@ namespace OpenAI.Responses
             switch (format)
             {
                 case "J":
-                    return ModelReaderWriter.Write(this, options, OpenAIResponsesContext.Default);
+                    return ModelReaderWriter.Write(this, options, OpenAIContext.Default);
                 default:
                     throw new FormatException($"The model {nameof(InternalResponsesDeveloperMessageItemParam)} does not support writing '{options.Format}' format.");
             }
@@ -120,7 +121,7 @@ namespace OpenAI.Responses
             {
                 return null;
             }
-            InternalItemType kind = default;
+            ResponseItemKind kind = default;
 #pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
             JsonPatch patch = new JsonPatch(data is null ? ReadOnlyMemory<byte>.Empty : data.ToMemory());
 #pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
@@ -130,7 +131,7 @@ namespace OpenAI.Responses
             {
                 if (prop.NameEquals("type"u8))
                 {
-                    kind = new InternalItemType(prop.Value.GetString());
+                    kind = new ResponseItemKind(prop.Value.GetString());
                     continue;
                 }
                 if (prop.NameEquals("role"u8))
@@ -163,6 +164,10 @@ namespace OpenAI.Responses
             {
                 int propertyLength = "content"u8.Length;
                 ReadOnlySpan<byte> currentSlice = local.Slice(propertyLength);
+                if (currentSlice.IsEmpty)
+                {
+                    return TryResolveContentArray(out value);
+                }
                 if (!currentSlice.TryGetIndex(out int index, out int bytesConsumed))
                 {
                     return false;
@@ -190,6 +195,34 @@ namespace OpenAI.Responses
                 return true;
             }
             return false;
+        }
+#pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+
+#pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+        private bool TryResolveContentArray(out JsonPatch.EncodedValue value)
+        {
+            value = default;
+            BinaryData data = ModelReaderWriter.Write(ActiveContent(), ModelReaderWriterOptions.Json, OpenAIContext.Default);
+            JsonPatch tempPatch = new JsonPatch();
+            tempPatch.Set("$"u8, data.ToMemory().Span);
+            return tempPatch.TryGetEncodedValue("$"u8, out value);
+        }
+#pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+
+#pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+        private IEnumerable<ResponseContentPart> ActiveContent()
+        {
+            if (!Optional.IsCollectionDefined(Content))
+            {
+                yield break;
+            }
+            for (int i = 0; i < Content.Count; i++)
+            {
+                if (!Content[i].Patch.IsRemoved("$"u8))
+                {
+                    yield return Content[i];
+                }
+            }
         }
 #pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
     }

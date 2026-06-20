@@ -6,12 +6,13 @@ using System;
 using System.ClientModel.Primitives;
 using System.Text;
 using System.Text.Json;
+using OpenAI;
 
 namespace OpenAI.Responses
 {
     public partial class ImageGenerationCallResponseItem : ResponseItem, IJsonModel<ImageGenerationCallResponseItem>
     {
-        internal ImageGenerationCallResponseItem() : this(InternalItemType.ImageGenerationCall, null, default, default, default, default, default, default, default, null, null)
+        internal ImageGenerationCallResponseItem() : this(ResponseItemKind.ImageGenerationCall, null, default, default, default, default, default, default, default, null, null)
         {
         }
 
@@ -36,7 +37,7 @@ namespace OpenAI.Responses
             switch (format)
             {
                 case "J":
-                    return ModelReaderWriter.Write(this, options, OpenAIResponsesContext.Default);
+                    return ModelReaderWriter.Write(this, options, OpenAIContext.Default);
                 default:
                     throw new FormatException($"The model {nameof(ImageGenerationCallResponseItem)} does not support writing '{options.Format}' format.");
             }
@@ -89,10 +90,10 @@ namespace OpenAI.Responses
                 writer.WritePropertyName("background"u8);
                 writer.WriteStringValue(Background.Value.ToString());
             }
-            if (Optional.IsDefined(OutputFormat) && !Patch.Contains("$.output_format"u8))
+            if (Optional.IsDefined(OutputFileFormat) && !Patch.Contains("$.output_format"u8))
             {
                 writer.WritePropertyName("output_format"u8);
-                writer.WriteStringValue(OutputFormat.Value.ToString());
+                writer.WriteStringValue(OutputFileFormat.Value.ToString());
             }
             if (Optional.IsDefined(Quality) && !Patch.Contains("$.quality"u8))
             {
@@ -142,7 +143,7 @@ namespace OpenAI.Responses
             {
                 return null;
             }
-            InternalItemType kind = default;
+            ResponseItemKind kind = default;
             string id = default;
 #pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
             JsonPatch patch = new JsonPatch(data is null ? ReadOnlyMemory<byte>.Empty : data.ToMemory());
@@ -150,7 +151,7 @@ namespace OpenAI.Responses
             ImageGenerationCallStatus? status = default;
             ImageGenerationToolAction? action = default;
             ImageGenerationToolBackground? background = default;
-            ImageGenerationToolOutputFileFormat? outputFormat = default;
+            ImageGenerationToolOutputFileFormat? outputFileFormat = default;
             ImageGenerationToolQuality? quality = default;
             ImageGenerationToolSize? size = default;
             string revisedPrompt = default;
@@ -159,7 +160,7 @@ namespace OpenAI.Responses
             {
                 if (prop.NameEquals("type"u8))
                 {
-                    kind = new InternalItemType(prop.Value.GetString());
+                    kind = new ResponseItemKind(prop.Value.GetString());
                     continue;
                 }
                 if (prop.NameEquals("id"u8))
@@ -194,10 +195,10 @@ namespace OpenAI.Responses
                 {
                     if (prop.Value.ValueKind == JsonValueKind.Null)
                     {
-                        outputFormat = null;
+                        outputFileFormat = null;
                         continue;
                     }
-                    outputFormat = new ImageGenerationToolOutputFileFormat(prop.Value.GetString());
+                    outputFileFormat = new ImageGenerationToolOutputFileFormat(prop.Value.GetString());
                     continue;
                 }
                 if (prop.NameEquals("quality"u8))
@@ -244,7 +245,7 @@ namespace OpenAI.Responses
                 status,
                 action,
                 background,
-                outputFormat,
+                outputFileFormat,
                 quality,
                 size,
                 revisedPrompt,

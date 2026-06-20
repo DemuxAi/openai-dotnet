@@ -11,18 +11,18 @@ namespace OpenAI.Responses
     [Experimental("OPENAI001")]
     public partial class ImageGenerationCallResponseItem : ResponseItem
     {
-        public ImageGenerationCallResponseItem(BinaryData imageResultBytes) : base(InternalItemType.ImageGenerationCall)
+        public ImageGenerationCallResponseItem(BinaryData imageResultBytes) : base(ResponseItemKind.ImageGenerationCall)
         {
             ImageResultBytes = imageResultBytes;
         }
 
 #pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
-        internal ImageGenerationCallResponseItem(InternalItemType kind, string id, in JsonPatch patch, ImageGenerationCallStatus? status, ImageGenerationToolAction? action, ImageGenerationToolBackground? background, ImageGenerationToolOutputFileFormat? outputFormat, ImageGenerationToolQuality? quality, ImageGenerationToolSize? size, string revisedPrompt, BinaryData imageResultBytes) : base(kind, id, patch)
+        internal ImageGenerationCallResponseItem(ResponseItemKind kind, string id, in JsonPatch patch, ImageGenerationCallStatus? status, ImageGenerationToolAction? action, ImageGenerationToolBackground? background, ImageGenerationToolOutputFileFormat? outputFileFormat, ImageGenerationToolQuality? quality, ImageGenerationToolSize? size, string revisedPrompt, BinaryData imageResultBytes) : base(kind, id, patch)
         {
             Status = status;
             Action = action;
             Background = background;
-            OutputFormat = outputFormat;
+            OutputFileFormat = outputFileFormat;
             Quality = quality;
             Size = size;
             RevisedPrompt = revisedPrompt;
@@ -33,8 +33,6 @@ namespace OpenAI.Responses
         public ImageGenerationToolAction? Action { get; set; }
 
         public ImageGenerationToolBackground? Background { get; set; }
-
-        public ImageGenerationToolOutputFileFormat? OutputFormat { get; set; }
 
         public ImageGenerationToolQuality? Quality { get; set; }
 

@@ -7,13 +7,14 @@ using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using OpenAI;
 
 namespace OpenAI.Responses
 {
     [Experimental("OPENAI001")]
     public partial class FileSearchTool : ResponseTool
     {
-        public FileSearchTool(IEnumerable<string> vectorStoreIds) : base(InternalToolType.FileSearch)
+        public FileSearchTool(IEnumerable<string> vectorStoreIds) : base(ResponseToolKind.FileSearch)
         {
             Argument.AssertNotNull(vectorStoreIds, nameof(vectorStoreIds));
 
@@ -21,7 +22,7 @@ namespace OpenAI.Responses
         }
 
 #pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
-        internal FileSearchTool(InternalToolType kind, in JsonPatch patch, IList<string> vectorStoreIds, int? maxResultCount, FileSearchToolRankingOptions rankingOptions, BinaryData filters) : base(kind, patch)
+        internal FileSearchTool(ResponseToolKind kind, in JsonPatch patch, IList<string> vectorStoreIds, int? maxResultCount, FileSearchToolRankingOptions rankingOptions, BinaryData filters) : base(kind, patch)
         {
             // Plugin customization: ensure initialization of collections
             VectorStoreIds = vectorStoreIds ?? new ChangeTrackingList<string>();

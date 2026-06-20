@@ -5,12 +5,13 @@
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Linq;
+using OpenAI;
 
 namespace OpenAI.Responses
 {
     internal partial class InternalComputerUsePreviewToolCallItemParam : InternalItemParam
     {
-        public InternalComputerUsePreviewToolCallItemParam(string callId, ComputerCallAction action, IEnumerable<ComputerCallSafetyCheck> pendingSafetyChecks) : base(InternalItemType.ComputerCall)
+        public InternalComputerUsePreviewToolCallItemParam(string callId, ComputerCallAction action, IEnumerable<ComputerCallSafetyCheck> pendingSafetyChecks) : base(ResponseItemKind.ComputerCall)
         {
             CallId = callId;
             Action = action;
@@ -18,7 +19,7 @@ namespace OpenAI.Responses
         }
 
 #pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
-        internal InternalComputerUsePreviewToolCallItemParam(InternalItemType kind, in JsonPatch patch, string callId, ComputerCallAction action, IList<ComputerCallSafetyCheck> pendingSafetyChecks) : base(kind, patch)
+        internal InternalComputerUsePreviewToolCallItemParam(ResponseItemKind kind, in JsonPatch patch, string callId, ComputerCallAction action, IList<ComputerCallSafetyCheck> pendingSafetyChecks) : base(kind, patch)
         {
             // Plugin customization: ensure initialization of collections
             CallId = callId;

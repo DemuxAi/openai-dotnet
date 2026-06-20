@@ -5,13 +5,14 @@
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using OpenAI;
 
 namespace OpenAI.Responses
 {
     [Experimental("OPENAI001")]
     public partial class CodeInterpreterCallResponseItem : ResponseItem
     {
-        public CodeInterpreterCallResponseItem(string code) : base(InternalItemType.CodeInterpreterCall)
+        public CodeInterpreterCallResponseItem(string code) : base(ResponseItemKind.CodeInterpreterCall)
         {
             Argument.AssertNotNull(code, nameof(code));
 
@@ -20,7 +21,7 @@ namespace OpenAI.Responses
         }
 
 #pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
-        internal CodeInterpreterCallResponseItem(InternalItemType kind, string id, in JsonPatch patch, CodeInterpreterCallStatus? status, string containerId, string code, IList<CodeInterpreterCallOutput> outputs) : base(kind, id, patch)
+        internal CodeInterpreterCallResponseItem(ResponseItemKind kind, string id, in JsonPatch patch, CodeInterpreterCallStatus? status, string containerId, string code, IList<CodeInterpreterCallOutput> outputs) : base(kind, id, patch)
         {
             // Plugin customization: ensure initialization of collections
             Status = status;

@@ -4,14 +4,16 @@
 
 using System;
 using System.ClientModel.Primitives;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
+using OpenAI;
 
 namespace OpenAI.Responses
 {
     public partial class StreamingResponseOutputTextDeltaUpdate : StreamingResponseUpdate, IJsonModel<StreamingResponseOutputTextDeltaUpdate>
     {
-        public StreamingResponseOutputTextDeltaUpdate() : this(InternalResponseStreamEventType.ResponseOutputTextDelta, default, default, null, default, default, null)
+        public StreamingResponseOutputTextDeltaUpdate() : this(StreamingResponseUpdateKind.ResponseOutputTextDelta, default, default, null, default, default, null, null)
         {
         }
 
@@ -36,7 +38,7 @@ namespace OpenAI.Responses
             switch (format)
             {
                 case "J":
-                    return ModelReaderWriter.Write(this, options, OpenAIResponsesContext.Default);
+                    return ModelReaderWriter.Write(this, options, OpenAIContext.Default);
                 default:
                     throw new FormatException($"The model {nameof(StreamingResponseOutputTextDeltaUpdate)} does not support writing '{options.Format}' format.");
             }
@@ -92,6 +94,29 @@ namespace OpenAI.Responses
                 writer.WritePropertyName("delta"u8);
                 writer.WriteStringValue(Delta);
             }
+            if (Patch.Contains("$.logprobs"u8))
+            {
+                if (!Patch.IsRemoved("$.logprobs"u8))
+                {
+                    writer.WritePropertyName("logprobs"u8);
+                    writer.WriteRawValue(Patch.GetJson("$.logprobs"u8));
+                }
+            }
+            else
+            {
+                writer.WritePropertyName("logprobs"u8);
+                writer.WriteStartArray();
+                for (int i = 0; i < TokenLogProbabilities.Count; i++)
+                {
+                    if (TokenLogProbabilities[i].Patch.IsRemoved("$"u8))
+                    {
+                        continue;
+                    }
+                    writer.WriteObjectValue(TokenLogProbabilities[i], options);
+                }
+                Patch.WriteTo(writer, "$.logprobs"u8);
+                writer.WriteEndArray();
+            }
 
             Patch.WriteTo(writer);
 #pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
@@ -116,7 +141,7 @@ namespace OpenAI.Responses
             {
                 return null;
             }
-            InternalResponseStreamEventType kind = default;
+            StreamingResponseUpdateKind kind = default;
             int sequenceNumber = default;
 #pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
             JsonPatch patch = new JsonPatch(data is null ? ReadOnlyMemory<byte>.Empty : data.ToMemory());
@@ -125,11 +150,12 @@ namespace OpenAI.Responses
             int outputIndex = default;
             int contentIndex = default;
             string delta = default;
+            IList<ResponseTokenLogProbabilityDetails> tokenLogProbabilities = default;
             foreach (var prop in element.EnumerateObject())
             {
                 if (prop.NameEquals("type"u8))
                 {
-                    kind = new InternalResponseStreamEventType(prop.Value.GetString());
+                    kind = new StreamingResponseUpdateKind(prop.Value.GetString());
                     continue;
                 }
                 if (prop.NameEquals("sequence_number"u8))
@@ -157,6 +183,16 @@ namespace OpenAI.Responses
                     delta = prop.Value.GetString();
                     continue;
                 }
+                if (prop.NameEquals("logprobs"u8))
+                {
+                    List<ResponseTokenLogProbabilityDetails> array = new List<ResponseTokenLogProbabilityDetails>();
+                    foreach (var item in prop.Value.EnumerateArray())
+                    {
+                        array.Add(ResponseTokenLogProbabilityDetails.DeserializeResponseTokenLogProbabilityDetails(item, item.GetUtf8Bytes(), options));
+                    }
+                    tokenLogProbabilities = array;
+                    continue;
+                }
                 patch.Set([.. "$."u8, .. Encoding.UTF8.GetBytes(prop.Name)], prop.Value.GetUtf8Bytes());
             }
             return new StreamingResponseOutputTextDeltaUpdate(
@@ -166,7 +202,80 @@ namespace OpenAI.Responses
                 itemId,
                 outputIndex,
                 contentIndex,
-                delta);
+                delta,
+                tokenLogProbabilities);
         }
+
+#pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+        private bool PropagateGet(ReadOnlySpan<byte> jsonPath, out JsonPatch.EncodedValue value)
+        {
+            ReadOnlySpan<byte> local = jsonPath.SliceToStartOfPropertyName();
+            value = default;
+
+            if (local.StartsWith("logprobs"u8))
+            {
+                int propertyLength = "logprobs"u8.Length;
+                ReadOnlySpan<byte> currentSlice = local.Slice(propertyLength);
+                if (currentSlice.IsEmpty)
+                {
+                    return TryResolveTokenLogProbabilitiesArray(out value);
+                }
+                if (!currentSlice.TryGetIndex(out int index, out int bytesConsumed))
+                {
+                    return false;
+                }
+                return TokenLogProbabilities[index].Patch.TryGetEncodedValue([.. "$"u8, .. currentSlice.Slice(bytesConsumed)], out value);
+            }
+            return false;
+        }
+#pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+
+#pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+        private bool PropagateSet(ReadOnlySpan<byte> jsonPath, JsonPatch.EncodedValue value)
+        {
+            ReadOnlySpan<byte> local = jsonPath.SliceToStartOfPropertyName();
+
+            if (local.StartsWith("logprobs"u8))
+            {
+                int propertyLength = "logprobs"u8.Length;
+                ReadOnlySpan<byte> currentSlice = local.Slice(propertyLength);
+                if (!currentSlice.TryGetIndex(out int index, out int bytesConsumed))
+                {
+                    return false;
+                }
+                TokenLogProbabilities[index].Patch.Set([.. "$"u8, .. currentSlice.Slice(bytesConsumed)], value);
+                return true;
+            }
+            return false;
+        }
+#pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+
+#pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+        private bool TryResolveTokenLogProbabilitiesArray(out JsonPatch.EncodedValue value)
+        {
+            value = default;
+            BinaryData data = ModelReaderWriter.Write(ActiveTokenLogProbabilities(), ModelReaderWriterOptions.Json, OpenAIContext.Default);
+            JsonPatch tempPatch = new JsonPatch();
+            tempPatch.Set("$"u8, data.ToMemory().Span);
+            return tempPatch.TryGetEncodedValue("$"u8, out value);
+        }
+#pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+
+#pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+        private IEnumerable<ResponseTokenLogProbabilityDetails> ActiveTokenLogProbabilities()
+        {
+            if (!Optional.IsCollectionDefined(TokenLogProbabilities))
+            {
+                yield break;
+            }
+            for (int i = 0; i < TokenLogProbabilities.Count; i++)
+            {
+                if (!TokenLogProbabilities[i].Patch.IsRemoved("$"u8))
+                {
+                    yield return TokenLogProbabilities[i];
+                }
+            }
+        }
+#pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
     }
 }

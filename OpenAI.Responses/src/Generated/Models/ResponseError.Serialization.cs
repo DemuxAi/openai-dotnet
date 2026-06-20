@@ -6,6 +6,7 @@ using System;
 using System.ClientModel.Primitives;
 using System.Text;
 using System.Text.Json;
+using OpenAI;
 
 namespace OpenAI.Responses
 {
@@ -36,7 +37,7 @@ namespace OpenAI.Responses
             switch (format)
             {
                 case "J":
-                    return ModelReaderWriter.Write(this, options, OpenAIResponsesContext.Default);
+                    return ModelReaderWriter.Write(this, options, OpenAIContext.Default);
                 default:
                     throw new FormatException($"The model {nameof(ResponseError)} does not support writing '{options.Format}' format.");
             }
@@ -81,6 +82,20 @@ namespace OpenAI.Responses
                 writer.WritePropertyName("message"u8);
                 writer.WriteStringValue(Message);
             }
+            if (Optional.IsDefined(Param) && !Patch.Contains("$.param"u8))
+            {
+                writer.WritePropertyName("param"u8);
+                writer.WriteStringValue(Param);
+            }
+            else
+            {
+                writer.WriteNull("param"u8);
+            }
+            if (!Patch.Contains("$.type"u8))
+            {
+                writer.WritePropertyName("type"u8);
+                writer.WriteStringValue(Kind);
+            }
 
             Patch.WriteTo(writer);
 #pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
@@ -107,6 +122,8 @@ namespace OpenAI.Responses
             }
             ResponseErrorCode code = default;
             string message = default;
+            string @param = default;
+            string kind = default;
 #pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
             JsonPatch patch = new JsonPatch(data is null ? ReadOnlyMemory<byte>.Empty : data.ToMemory());
 #pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
@@ -122,9 +139,24 @@ namespace OpenAI.Responses
                     message = prop.Value.GetString();
                     continue;
                 }
+                if (prop.NameEquals("param"u8))
+                {
+                    if (prop.Value.ValueKind == JsonValueKind.Null)
+                    {
+                        @param = null;
+                        continue;
+                    }
+                    @param = prop.Value.GetString();
+                    continue;
+                }
+                if (prop.NameEquals("type"u8))
+                {
+                    kind = prop.Value.GetString();
+                    continue;
+                }
                 patch.Set([.. "$."u8, .. Encoding.UTF8.GetBytes(prop.Name)], prop.Value.GetUtf8Bytes());
             }
-            return new ResponseError(code, message, patch);
+            return new ResponseError(code, message, @param, kind, patch);
         }
     }
 }

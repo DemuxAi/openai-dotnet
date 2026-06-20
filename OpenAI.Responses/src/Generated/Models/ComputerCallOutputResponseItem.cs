@@ -5,13 +5,14 @@
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using OpenAI;
 
 namespace OpenAI.Responses
 {
     [Experimental("OPENAICUA001")]
     public partial class ComputerCallOutputResponseItem : ResponseItem
     {
-        public ComputerCallOutputResponseItem(string callId, ComputerCallOutput output) : base(InternalItemType.ComputerCallOutput)
+        public ComputerCallOutputResponseItem(string callId, ComputerCallOutput output) : base(ResponseItemKind.ComputerCallOutput)
         {
             Argument.AssertNotNull(callId, nameof(callId));
             Argument.AssertNotNull(output, nameof(output));
@@ -22,7 +23,7 @@ namespace OpenAI.Responses
         }
 
 #pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
-        internal ComputerCallOutputResponseItem(InternalItemType kind, string id, in JsonPatch patch, ComputerCallOutputStatus? status, string callId, IList<ComputerCallSafetyCheck> acknowledgedSafetyChecks, ComputerCallOutput output) : base(kind, id, patch)
+        internal ComputerCallOutputResponseItem(ResponseItemKind kind, string id, in JsonPatch patch, ComputerCallOutputStatus? status, string callId, IList<ComputerCallSafetyCheck> acknowledgedSafetyChecks, ComputerCallOutput output) : base(kind, id, patch)
         {
             // Plugin customization: ensure initialization of collections
             Status = status;

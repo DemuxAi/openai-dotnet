@@ -7,12 +7,13 @@ using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
+using OpenAI;
 
 namespace OpenAI.Responses
 {
     public partial class CodeInterpreterCallResponseItem : ResponseItem, IJsonModel<CodeInterpreterCallResponseItem>
     {
-        internal CodeInterpreterCallResponseItem() : this(InternalItemType.CodeInterpreterCall, null, default, default, null, null, null)
+        internal CodeInterpreterCallResponseItem() : this(ResponseItemKind.CodeInterpreterCall, null, default, default, null, null, null)
         {
         }
 
@@ -37,7 +38,7 @@ namespace OpenAI.Responses
             switch (format)
             {
                 case "J":
-                    return ModelReaderWriter.Write(this, options, OpenAIResponsesContext.Default);
+                    return ModelReaderWriter.Write(this, options, OpenAIContext.Default);
                 default:
                     throw new FormatException($"The model {nameof(CodeInterpreterCallResponseItem)} does not support writing '{options.Format}' format.");
             }
@@ -137,7 +138,7 @@ namespace OpenAI.Responses
             {
                 return null;
             }
-            InternalItemType kind = default;
+            ResponseItemKind kind = default;
             string id = default;
 #pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
             JsonPatch patch = new JsonPatch(data is null ? ReadOnlyMemory<byte>.Empty : data.ToMemory());
@@ -150,7 +151,7 @@ namespace OpenAI.Responses
             {
                 if (prop.NameEquals("type"u8))
                 {
-                    kind = new InternalItemType(prop.Value.GetString());
+                    kind = new ResponseItemKind(prop.Value.GetString());
                     continue;
                 }
                 if (prop.NameEquals("id"u8))
@@ -209,6 +210,10 @@ namespace OpenAI.Responses
             {
                 int propertyLength = "outputs"u8.Length;
                 ReadOnlySpan<byte> currentSlice = local.Slice(propertyLength);
+                if (currentSlice.IsEmpty)
+                {
+                    return TryResolveOutputsArray(out value);
+                }
                 if (!currentSlice.TryGetIndex(out int index, out int bytesConsumed))
                 {
                     return false;
@@ -236,6 +241,34 @@ namespace OpenAI.Responses
                 return true;
             }
             return false;
+        }
+#pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+
+#pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+        private bool TryResolveOutputsArray(out JsonPatch.EncodedValue value)
+        {
+            value = default;
+            BinaryData data = ModelReaderWriter.Write(ActiveOutputs(), ModelReaderWriterOptions.Json, OpenAIContext.Default);
+            JsonPatch tempPatch = new JsonPatch();
+            tempPatch.Set("$"u8, data.ToMemory().Span);
+            return tempPatch.TryGetEncodedValue("$"u8, out value);
+        }
+#pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+
+#pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+        private IEnumerable<CodeInterpreterCallOutput> ActiveOutputs()
+        {
+            if (!Optional.IsCollectionDefined(Outputs))
+            {
+                yield break;
+            }
+            for (int i = 0; i < Outputs.Count; i++)
+            {
+                if (!Outputs[i].Patch.IsRemoved("$"u8))
+                {
+                    yield return Outputs[i];
+                }
+            }
         }
 #pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
     }

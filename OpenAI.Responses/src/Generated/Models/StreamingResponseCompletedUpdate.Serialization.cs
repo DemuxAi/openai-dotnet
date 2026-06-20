@@ -6,12 +6,13 @@ using System;
 using System.ClientModel.Primitives;
 using System.Text;
 using System.Text.Json;
+using OpenAI;
 
 namespace OpenAI.Responses
 {
     public partial class StreamingResponseCompletedUpdate : StreamingResponseUpdate, IJsonModel<StreamingResponseCompletedUpdate>
     {
-        public StreamingResponseCompletedUpdate() : this(InternalResponseStreamEventType.ResponseCompleted, default, default, null)
+        public StreamingResponseCompletedUpdate() : this(StreamingResponseUpdateKind.ResponseCompleted, default, default, null)
         {
         }
 
@@ -36,7 +37,7 @@ namespace OpenAI.Responses
             switch (format)
             {
                 case "J":
-                    return ModelReaderWriter.Write(this, options, OpenAIResponsesContext.Default);
+                    return ModelReaderWriter.Write(this, options, OpenAIContext.Default);
                 default:
                     throw new FormatException($"The model {nameof(StreamingResponseCompletedUpdate)} does not support writing '{options.Format}' format.");
             }
@@ -101,7 +102,7 @@ namespace OpenAI.Responses
             {
                 return null;
             }
-            InternalResponseStreamEventType kind = default;
+            StreamingResponseUpdateKind kind = default;
             int sequenceNumber = default;
 #pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
             JsonPatch patch = new JsonPatch(data is null ? ReadOnlyMemory<byte>.Empty : data.ToMemory());
@@ -111,7 +112,7 @@ namespace OpenAI.Responses
             {
                 if (prop.NameEquals("type"u8))
                 {
-                    kind = new InternalResponseStreamEventType(prop.Value.GetString());
+                    kind = new StreamingResponseUpdateKind(prop.Value.GetString());
                     continue;
                 }
                 if (prop.NameEquals("sequence_number"u8))
