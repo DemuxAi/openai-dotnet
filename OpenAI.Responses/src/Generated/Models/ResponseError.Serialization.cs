@@ -12,7 +12,7 @@ namespace OpenAI.Responses
 {
     public partial class ResponseError : IJsonModel<ResponseError>
     {
-        internal ResponseError()
+        public ResponseError()
         {
         }
 
@@ -87,7 +87,7 @@ namespace OpenAI.Responses
                 writer.WritePropertyName("param"u8);
                 writer.WriteStringValue(Param);
             }
-            else
+            else if (!Patch.Contains("$.param"u8))
             {
                 writer.WriteNull("param"u8);
             }

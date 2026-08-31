@@ -81,6 +81,8 @@ using TypeSpec.HttpClient.CSharp;
 
 // ------------ Tools ------------
 
+@@alternateType(CodeInterpreterTool.container, DotNetCodeInterpreterToolContainer);
+
 @@clientName(FileSearchTool.max_num_results, "MaxResultCount");
 
 @@clientName(FunctionTool.name, "FunctionName");
@@ -120,6 +122,13 @@ using TypeSpec.HttpClient.CSharp;
 
 @@clientName(ResponseOutputTextDeltaEvent.logprobs, "TokenLogProbabilities");
 @@clientName(ResponseOutputTextDoneEvent.logprobs, "TokenLogProbabilities");
+
+
+// ------------ Others ------------
+
+@@clientName(CreateResponse.prompt_cache_retention, "PromptCacheRetentionPolicy");
+@@clientName(Response.prompt_cache_retention, "PromptCacheRetentionPolicy");
+@@clientName(PromptCacheRetention.`24h`, "Max24Hours");
 
 // ------------ JsonPatch ------------
 

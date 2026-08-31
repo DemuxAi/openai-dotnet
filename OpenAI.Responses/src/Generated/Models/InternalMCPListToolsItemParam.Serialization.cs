@@ -13,7 +13,7 @@ namespace OpenAI.Responses
 {
     internal partial class InternalMCPListToolsItemParam : InternalItemParam, IJsonModel<InternalMCPListToolsItemParam>
     {
-        internal InternalMCPListToolsItemParam() : this(ResponseItemKind.McpListTools, default, null, null, null)
+        public InternalMCPListToolsItemParam() : this(ResponseItemKind.McpListTools, default, null, null, null)
         {
         }
 
@@ -84,7 +84,7 @@ namespace OpenAI.Responses
                 if (!Patch.IsRemoved("$.tools"u8))
                 {
                     writer.WritePropertyName("tools"u8);
-                    writer.WriteRawValue(Patch.GetJson("$.tools"u8));
+                    Patch.WriteTo(writer, "$.tools"u8);
                 }
             }
             else

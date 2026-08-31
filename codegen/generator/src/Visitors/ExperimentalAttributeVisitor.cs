@@ -20,7 +20,6 @@ namespace OpenAILibraryPlugin.Visitors
         private const string _realtimeNamespace = "OpenAI.Realtime";
         private static readonly AttributeStatement _experimental001Attribute = new(typeof(ExperimentalAttribute), Snippet.Literal("OPENAI001"));
         private static readonly AttributeStatement _experimental002Attribute = new(typeof(ExperimentalAttribute), Snippet.Literal("OPENAI002"));
-        private static readonly AttributeStatement _experimentalCUA001Attribute = new(typeof(ExperimentalAttribute), Snippet.Literal("OPENAICUA001"));
 
         // Stable sets loaded from the embedded ga-apis.yaml resource
         private static readonly HashSet<string> _stableClasses;
@@ -56,20 +55,6 @@ namespace OpenAILibraryPlugin.Visitors
             }
         }
 
-        private static readonly HashSet<string> _OPENAICUA001AttributeTypes = new(StringComparer.OrdinalIgnoreCase)
-        {
-            "ComputerCallAction",
-            "ComputerCallActionKind",
-            "ComputerCallActionMouseButton",
-            "ComputerCallOutputResponseItem",
-            "ComputerCallOutputStatus",
-            "ComputerCallResponseItem",
-            "ComputerCallSafetyCheck",
-            "ComputerCallStatus",
-            "ComputerCallOutput",
-            "ComputerToolEnvironment",
-        };
-
         protected override PropertyProvider? VisitProperty(PropertyProvider property)
         {
             // Skip properties that are already marked as experimental
@@ -100,6 +85,12 @@ namespace OpenAILibraryPlugin.Visitors
 
         protected override MethodProvider? VisitMethod(MethodProvider methodProvider)
         {
+            // Skip methods that are already marked as experimental.
+            if (methodProvider.Signature.Attributes.Any(attr => attr.Type.Equals(typeof(ExperimentalAttribute))))
+            {
+                return base.VisitMethod(methodProvider);
+            }
+
             // Skip methods that are not public or are in non-stable classes
             if ((!methodProvider.Signature.Modifiers.HasFlag(MethodSignatureModifiers.Public) &&
                     !methodProvider.Signature.Modifiers.HasFlag(MethodSignatureModifiers.Protected)) ||
@@ -159,7 +150,6 @@ namespace OpenAILibraryPlugin.Visitors
                 AttributeStatement experimentalAttribute = type.Type.Namespace switch
                 {
                     _ when type.Type.Namespace.StartsWith(_realtimeNamespace) => _experimental002Attribute,
-                    _ when _OPENAICUA001AttributeTypes.Contains(type.Name) => _experimentalCUA001Attribute,
                     _ => _experimental001Attribute
                 };
                 type.Update(

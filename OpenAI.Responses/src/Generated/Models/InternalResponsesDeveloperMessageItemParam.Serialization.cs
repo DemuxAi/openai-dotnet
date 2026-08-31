@@ -13,7 +13,7 @@ namespace OpenAI.Responses
 {
     internal partial class InternalResponsesDeveloperMessageItemParam : InternalResponsesMessageItemParam, IJsonModel<InternalResponsesDeveloperMessageItemParam>
     {
-        internal InternalResponsesDeveloperMessageItemParam() : this(default, default, InternalResponsesMessageRole.Developer, null)
+        public InternalResponsesDeveloperMessageItemParam() : this(default, default, InternalResponsesMessageRole.Developer, null)
         {
         }
 
@@ -79,7 +79,7 @@ namespace OpenAI.Responses
                 if (!Patch.IsRemoved("$.content"u8))
                 {
                     writer.WritePropertyName("content"u8);
-                    writer.WriteRawValue(Patch.GetJson("$.content"u8));
+                    Patch.WriteTo(writer, "$.content"u8);
                 }
             }
             else

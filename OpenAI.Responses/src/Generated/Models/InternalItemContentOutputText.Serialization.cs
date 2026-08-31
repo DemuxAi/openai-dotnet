@@ -13,7 +13,7 @@ namespace OpenAI.Responses
 {
     internal partial class InternalItemContentOutputText : ResponseContentPart, IJsonModel<InternalItemContentOutputText>
     {
-        internal InternalItemContentOutputText() : this(InternalItemContentType.OutputText, default, null, null, null)
+        public InternalItemContentOutputText() : this(InternalItemContentType.OutputText, default, null, null, null)
         {
         }
 
@@ -84,7 +84,7 @@ namespace OpenAI.Responses
                 if (!Patch.IsRemoved("$.annotations"u8))
                 {
                     writer.WritePropertyName("annotations"u8);
-                    writer.WriteRawValue(Patch.GetJson("$.annotations"u8));
+                    Patch.WriteTo(writer, "$.annotations"u8);
                 }
             }
             else
@@ -107,7 +107,7 @@ namespace OpenAI.Responses
                 if (!Patch.IsRemoved("$.logprobs"u8))
                 {
                     writer.WritePropertyName("logprobs"u8);
-                    writer.WriteRawValue(Patch.GetJson("$.logprobs"u8));
+                    Patch.WriteTo(writer, "$.logprobs"u8);
                 }
             }
             else if (Optional.IsCollectionDefined(Logprobs))

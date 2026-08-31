@@ -179,7 +179,7 @@ namespace OpenAI.Responses
                 if (!Patch.IsRemoved("$.tools"u8))
                 {
                     writer.WritePropertyName("tools"u8);
-                    writer.WriteRawValue(Patch.GetJson("$.tools"u8));
+                    Patch.WriteTo(writer, "$.tools"u8);
                 }
             }
             else if (Optional.IsCollectionDefined(Tools))
@@ -212,7 +212,7 @@ namespace OpenAI.Responses
                 if (!Patch.IsRemoved("$.input"u8))
                 {
                     writer.WritePropertyName("input"u8);
-                    writer.WriteRawValue(Patch.GetJson("$.input"u8));
+                    Patch.WriteTo(writer, "$.input"u8);
                 }
             }
             else if (Optional.IsCollectionDefined(InputItems))
@@ -235,7 +235,7 @@ namespace OpenAI.Responses
                 if (!Patch.IsRemoved("$.include"u8))
                 {
                     writer.WritePropertyName("include"u8);
-                    writer.WriteRawValue(Patch.GetJson("$.include"u8));
+                    Patch.WriteTo(writer, "$.include"u8);
                 }
             }
             else if (Optional.IsCollectionDefined(IncludedProperties))
@@ -277,6 +277,16 @@ namespace OpenAI.Responses
             {
                 writer.WritePropertyName("conversation"u8);
                 writer.WriteObjectValue(ConversationOptions, options);
+            }
+            if (Optional.IsDefined(PromptCacheKey) && !Patch.Contains("$.prompt_cache_key"u8))
+            {
+                writer.WritePropertyName("prompt_cache_key"u8);
+                writer.WriteStringValue(PromptCacheKey);
+            }
+            if (Optional.IsDefined(PromptCacheRetentionPolicy) && !Patch.Contains("$.prompt_cache_retention"u8))
+            {
+                writer.WritePropertyName("prompt_cache_retention"u8);
+                writer.WriteStringValue(PromptCacheRetentionPolicy.Value.ToString());
             }
 
             Patch.WriteTo(writer);
@@ -326,6 +336,8 @@ namespace OpenAI.Responses
             string instructions = default;
             bool? streamingEnabled = default;
             ResponseConversationOptions conversationOptions = default;
+            string promptCacheKey = default;
+            ResponsePromptCacheRetentionPolicy? promptCacheRetentionPolicy = default;
 #pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
             JsonPatch patch = new JsonPatch(data is null ? ReadOnlyMemory<byte>.Empty : data.ToMemory());
 #pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
@@ -575,6 +587,20 @@ namespace OpenAI.Responses
                     conversationOptions = ResponseConversationOptions.DeserializeResponseConversationOptions(prop.Value, prop.Value.GetUtf8Bytes(), options);
                     continue;
                 }
+                if (prop.NameEquals("prompt_cache_key"u8))
+                {
+                    promptCacheKey = prop.Value.GetString();
+                    continue;
+                }
+                if (prop.NameEquals("prompt_cache_retention"u8))
+                {
+                    if (prop.Value.ValueKind == JsonValueKind.Null)
+                    {
+                        continue;
+                    }
+                    promptCacheRetentionPolicy = new ResponsePromptCacheRetentionPolicy(prop.Value.GetString());
+                    continue;
+                }
                 patch.Set([.. "$."u8, .. Encoding.UTF8.GetBytes(prop.Name)], prop.Value.GetUtf8Bytes());
             }
             return new CreateResponseOptions(
@@ -602,6 +628,8 @@ namespace OpenAI.Responses
                 instructions,
                 streamingEnabled,
                 conversationOptions,
+                promptCacheKey,
+                promptCacheRetentionPolicy,
                 patch);
         }
 

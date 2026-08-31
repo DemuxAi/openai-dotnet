@@ -13,7 +13,7 @@ namespace OpenAI.Responses
 {
     public partial class ReasoningResponseItem : ResponseItem, IJsonModel<ReasoningResponseItem>
     {
-        internal ReasoningResponseItem() : this(ResponseItemKind.Reasoning, null, default, default, null, null)
+        public ReasoningResponseItem() : this(ResponseItemKind.Reasoning, null, default, default, null, null)
         {
         }
 
@@ -91,7 +91,7 @@ namespace OpenAI.Responses
                 if (!Patch.IsRemoved("$.summary"u8))
                 {
                     writer.WritePropertyName("summary"u8);
-                    writer.WriteRawValue(Patch.GetJson("$.summary"u8));
+                    Patch.WriteTo(writer, "$.summary"u8);
                 }
             }
             else

@@ -13,7 +13,7 @@ namespace OpenAI.Responses
 {
     internal partial class InternalComputerUsePreviewToolCallItemParam : InternalItemParam, IJsonModel<InternalComputerUsePreviewToolCallItemParam>
     {
-        internal InternalComputerUsePreviewToolCallItemParam() : this(ResponseItemKind.ComputerCall, default, null, null, null)
+        public InternalComputerUsePreviewToolCallItemParam() : this(ResponseItemKind.ComputerCall, default, null, null, null)
         {
         }
 
@@ -89,7 +89,7 @@ namespace OpenAI.Responses
                 if (!Patch.IsRemoved("$.pending_safety_checks"u8))
                 {
                     writer.WritePropertyName("pending_safety_checks"u8);
-                    writer.WriteRawValue(Patch.GetJson("$.pending_safety_checks"u8));
+                    Patch.WriteTo(writer, "$.pending_safety_checks"u8);
                 }
             }
             else

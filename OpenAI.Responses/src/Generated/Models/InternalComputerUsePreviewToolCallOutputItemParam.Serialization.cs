@@ -13,7 +13,7 @@ namespace OpenAI.Responses
 {
     internal partial class InternalComputerUsePreviewToolCallOutputItemParam : InternalItemParam, IJsonModel<InternalComputerUsePreviewToolCallOutputItemParam>
     {
-        internal InternalComputerUsePreviewToolCallOutputItemParam() : this(ResponseItemKind.ComputerCallOutput, default, null, null, null)
+        public InternalComputerUsePreviewToolCallOutputItemParam() : this(ResponseItemKind.ComputerCallOutput, default, null, null, null)
         {
         }
 
@@ -84,7 +84,7 @@ namespace OpenAI.Responses
                 if (!Patch.IsRemoved("$.acknowledged_safety_checks"u8))
                 {
                     writer.WritePropertyName("acknowledged_safety_checks"u8);
-                    writer.WriteRawValue(Patch.GetJson("$.acknowledged_safety_checks"u8));
+                    Patch.WriteTo(writer, "$.acknowledged_safety_checks"u8);
                 }
             }
             else if (Optional.IsCollectionDefined(AcknowledgedSafetyChecks))

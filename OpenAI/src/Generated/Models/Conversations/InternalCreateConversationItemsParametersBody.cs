@@ -2,35 +2,42 @@
 
 #nullable disable
 
-using System;
+using System.ClientModel.Primitives;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text.Json.Serialization;
 using OpenAI;
+using OpenAI.Responses;
 
 namespace OpenAI.Conversations
 {
     internal partial class InternalCreateConversationItemsParametersBody
     {
-        private protected IDictionary<string, BinaryData> _additionalBinaryDataProperties;
+        [Experimental("SCME0001")]
+        private JsonPatch _patch;
 
-        internal InternalCreateConversationItemsParametersBody(IEnumerable<InternalConversationItemResource> items)
+        internal InternalCreateConversationItemsParametersBody(IEnumerable<ResponseItem> items)
         {
             Items = items.ToList();
         }
 
-        internal InternalCreateConversationItemsParametersBody(IList<InternalConversationItemResource> items, IDictionary<string, BinaryData> additionalBinaryDataProperties)
+#pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+        internal InternalCreateConversationItemsParametersBody(IList<ResponseItem> items, in JsonPatch patch)
         {
             // Plugin customization: ensure initialization of collections
-            Items = items ?? new ChangeTrackingList<InternalConversationItemResource>();
-            _additionalBinaryDataProperties = additionalBinaryDataProperties;
+            Items = items ?? new ChangeTrackingList<ResponseItem>();
+            _patch = patch;
+            _patch.SetPropagators(PropagateSet, PropagateGet);
         }
+#pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
 
-        internal IList<InternalConversationItemResource> Items { get; }
+        [JsonIgnore]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [Experimental("SCME0001")]
+        public ref JsonPatch Patch => ref _patch;
 
-        internal IDictionary<string, BinaryData> SerializedAdditionalRawData
-        {
-            get => _additionalBinaryDataProperties;
-            set => _additionalBinaryDataProperties = value;
-        }
+        public IList<ResponseItem> Items { get; }
     }
 }

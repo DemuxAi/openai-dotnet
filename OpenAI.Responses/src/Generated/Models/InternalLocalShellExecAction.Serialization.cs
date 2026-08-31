@@ -13,7 +13,7 @@ namespace OpenAI.Responses
 {
     internal partial class InternalLocalShellExecAction : IJsonModel<InternalLocalShellExecAction>
     {
-        internal InternalLocalShellExecAction() : this(null, null, default, null, null, null, default)
+        public InternalLocalShellExecAction() : this(null, null, default, null, null, null, default)
         {
         }
 
@@ -83,7 +83,7 @@ namespace OpenAI.Responses
                 if (!Patch.IsRemoved("$.command"u8))
                 {
                     writer.WritePropertyName("command"u8);
-                    writer.WriteRawValue(Patch.GetJson("$.command"u8));
+                    Patch.WriteTo(writer, "$.command"u8);
                 }
             }
             else

@@ -582,7 +582,7 @@ public partial class ResponsesToolTests : OpenAIRecordedTestBase
         ResponsesClient client = GetProxiedResponsesClient();
 
         // Create a container first using the Containers API
-        CreateContainerBody containerBody = new("test-container-for-code-interpreter");
+        ContainerCreationOptions containerBody = new("test-container-for-code-interpreter");
         var containerResult = await containerClient.CreateContainerAsync(containerBody);
         Assert.That(containerResult.Value, Is.Not.Null);
         Assert.That(containerResult.Value.Id, Is.Not.Null.And.Not.Empty);
@@ -1431,7 +1431,7 @@ public partial class ResponsesToolTests : OpenAIRecordedTestBase
                 """
                 The user has the following files:
                 < BEGIN_FILES >
-                ===== lib / fib.py
+                ===== lib/fib.py
                 def fib(n):
                     if n <= 1:
                         return n
@@ -1446,7 +1446,7 @@ public partial class ResponsesToolTests : OpenAIRecordedTestBase
                 < BEGIN_FILES >
                 ===== obsolete.txt
                 This file is obsolete and can be removed.
-                ===== src / app.py
+                ===== src/app.py
                 print("hello")
                 < END_FILES >
 

@@ -5,14 +5,16 @@
 using System;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.Json;
 using OpenAI;
+using OpenAI.Responses;
 
 namespace OpenAI.Conversations
 {
     internal partial class InternalCreateConversationItemsParametersBody : IJsonModel<InternalCreateConversationItemsParametersBody>
     {
-        internal InternalCreateConversationItemsParametersBody() : this(null, null)
+        public InternalCreateConversationItemsParametersBody() : this(null, default)
         {
         }
 
@@ -24,7 +26,7 @@ namespace OpenAI.Conversations
                 case "J":
                     using (JsonDocument document = JsonDocument.Parse(data, ModelSerializationExtensions.JsonDocumentOptions))
                     {
-                        return DeserializeInternalCreateConversationItemsParametersBody(document.RootElement, options);
+                        return DeserializeInternalCreateConversationItemsParametersBody(document.RootElement, data, options);
                     }
                 default:
                     throw new FormatException($"The model {nameof(InternalCreateConversationItemsParametersBody)} does not support reading '{options.Format}' format.");
@@ -51,6 +53,14 @@ namespace OpenAI.Conversations
 
         void IJsonModel<InternalCreateConversationItemsParametersBody>.Write(Utf8JsonWriter writer, ModelReaderWriterOptions options)
         {
+#pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+            if (Patch.Contains("$"u8))
+            {
+                writer.WriteRawValue(Patch.GetJson("$"u8));
+                return;
+            }
+#pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+
             writer.WriteStartObject();
             JsonModelWriteCore(writer, options);
             writer.WriteEndObject();
@@ -63,36 +73,33 @@ namespace OpenAI.Conversations
             {
                 throw new FormatException($"The model {nameof(InternalCreateConversationItemsParametersBody)} does not support writing '{format}' format.");
             }
-            if (_additionalBinaryDataProperties?.ContainsKey("items") != true)
+#pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+            if (Patch.Contains("$.items"u8))
+            {
+                if (!Patch.IsRemoved("$.items"u8))
+                {
+                    writer.WritePropertyName("items"u8);
+                    Patch.WriteTo(writer, "$.items"u8);
+                }
+            }
+            else
             {
                 writer.WritePropertyName("items"u8);
                 writer.WriteStartArray();
-                foreach (InternalConversationItemResource item in Items)
+                for (int i = 0; i < Items.Count; i++)
                 {
-                    writer.WriteObjectValue(item, options);
-                }
-                writer.WriteEndArray();
-            }
-            // Plugin customization: remove options.Format != "W" check
-            if (_additionalBinaryDataProperties != null)
-            {
-                foreach (var item in _additionalBinaryDataProperties)
-                {
-                    if (ModelSerializationExtensions.IsSentinelValue(item.Value))
+                    if (Items[i].Patch.IsRemoved("$"u8))
                     {
                         continue;
                     }
-                    writer.WritePropertyName(item.Key);
-#if NET6_0_OR_GREATER
-                    writer.WriteRawValue(item.Value);
-#else
-                    using (JsonDocument document = JsonDocument.Parse(item.Value))
-                    {
-                        JsonSerializer.Serialize(writer, document.RootElement);
-                    }
-#endif
+                    writer.WriteObjectValue(Items[i], options);
                 }
+                Patch.WriteTo(writer, "$.items"u8);
+                writer.WriteEndArray();
             }
+
+            Patch.WriteTo(writer);
+#pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
         }
 
         InternalCreateConversationItemsParametersBody IJsonModel<InternalCreateConversationItemsParametersBody>.Create(ref Utf8JsonReader reader, ModelReaderWriterOptions options) => JsonModelCreateCore(ref reader, options);
@@ -105,33 +112,106 @@ namespace OpenAI.Conversations
                 throw new FormatException($"The model {nameof(InternalCreateConversationItemsParametersBody)} does not support reading '{format}' format.");
             }
             using JsonDocument document = JsonDocument.ParseValue(ref reader);
-            return DeserializeInternalCreateConversationItemsParametersBody(document.RootElement, options);
+            return DeserializeInternalCreateConversationItemsParametersBody(document.RootElement, null, options);
         }
 
-        internal static InternalCreateConversationItemsParametersBody DeserializeInternalCreateConversationItemsParametersBody(JsonElement element, ModelReaderWriterOptions options)
+        internal static InternalCreateConversationItemsParametersBody DeserializeInternalCreateConversationItemsParametersBody(JsonElement element, BinaryData data, ModelReaderWriterOptions options)
         {
             if (element.ValueKind == JsonValueKind.Null)
             {
                 return null;
             }
-            IList<InternalConversationItemResource> items = default;
-            IDictionary<string, BinaryData> additionalBinaryDataProperties = new ChangeTrackingDictionary<string, BinaryData>();
+            IList<ResponseItem> items = default;
+#pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+            JsonPatch patch = new JsonPatch(data is null ? ReadOnlyMemory<byte>.Empty : data.ToMemory());
+#pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
             foreach (var prop in element.EnumerateObject())
             {
                 if (prop.NameEquals("items"u8))
                 {
-                    List<InternalConversationItemResource> array = new List<InternalConversationItemResource>();
+                    List<ResponseItem> array = new List<ResponseItem>();
                     foreach (var item in prop.Value.EnumerateArray())
                     {
-                        array.Add(InternalConversationItemResource.DeserializeInternalConversationItemResource(item, options));
+                        array.Add(ResponseItem.DeserializeResponseItem(item, item.GetUtf8Bytes(), options));
                     }
                     items = array;
                     continue;
                 }
-                // Plugin customization: remove options.Format != "W" check
-                additionalBinaryDataProperties.Add(prop.Name, BinaryData.FromString(prop.Value.GetRawText()));
+                patch.Set([.. "$."u8, .. Encoding.UTF8.GetBytes(prop.Name)], prop.Value.GetUtf8Bytes());
             }
-            return new InternalCreateConversationItemsParametersBody(items, additionalBinaryDataProperties);
+            return new InternalCreateConversationItemsParametersBody(items, patch);
         }
+
+#pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+        private bool PropagateGet(ReadOnlySpan<byte> jsonPath, out JsonPatch.EncodedValue value)
+        {
+            ReadOnlySpan<byte> local = jsonPath.SliceToStartOfPropertyName();
+            value = default;
+
+            if (local.StartsWith("items"u8))
+            {
+                int propertyLength = "items"u8.Length;
+                ReadOnlySpan<byte> currentSlice = local.Slice(propertyLength);
+                if (currentSlice.IsEmpty)
+                {
+                    return TryResolveItemsArray(out value);
+                }
+                if (!currentSlice.TryGetIndex(out int index, out int bytesConsumed))
+                {
+                    return false;
+                }
+                return Items[index].Patch.TryGetEncodedValue([.. "$"u8, .. currentSlice.Slice(bytesConsumed)], out value);
+            }
+            return false;
+        }
+#pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+
+#pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+        private bool PropagateSet(ReadOnlySpan<byte> jsonPath, JsonPatch.EncodedValue value)
+        {
+            ReadOnlySpan<byte> local = jsonPath.SliceToStartOfPropertyName();
+
+            if (local.StartsWith("items"u8))
+            {
+                int propertyLength = "items"u8.Length;
+                ReadOnlySpan<byte> currentSlice = local.Slice(propertyLength);
+                if (!currentSlice.TryGetIndex(out int index, out int bytesConsumed))
+                {
+                    return false;
+                }
+                Items[index].Patch.Set([.. "$"u8, .. currentSlice.Slice(bytesConsumed)], value);
+                return true;
+            }
+            return false;
+        }
+#pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+
+#pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+        private bool TryResolveItemsArray(out JsonPatch.EncodedValue value)
+        {
+            value = default;
+            BinaryData data = ModelReaderWriter.Write(ActiveItems(), ModelReaderWriterOptions.Json, OpenAIContext.Default);
+            JsonPatch tempPatch = new JsonPatch();
+            tempPatch.Set("$"u8, data.ToMemory().Span);
+            return tempPatch.TryGetEncodedValue("$"u8, out value);
+        }
+#pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+
+#pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+        private IEnumerable<ResponseItem> ActiveItems()
+        {
+            if (!Optional.IsCollectionDefined(Items))
+            {
+                yield break;
+            }
+            for (int i = 0; i < Items.Count; i++)
+            {
+                if (!Items[i].Patch.IsRemoved("$"u8))
+                {
+                    yield return Items[i];
+                }
+            }
+        }
+#pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
     }
 }

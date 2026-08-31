@@ -12,7 +12,7 @@ namespace OpenAI.Responses
 {
     public partial class ImageGenerationCallResponseItem : ResponseItem, IJsonModel<ImageGenerationCallResponseItem>
     {
-        internal ImageGenerationCallResponseItem() : this(ResponseItemKind.ImageGenerationCall, null, default, default, default, default, default, default, default, null, null)
+        public ImageGenerationCallResponseItem() : this(ResponseItemKind.ImageGenerationCall, null, default, default, default, default, default, default, default, null, null)
         {
         }
 
@@ -115,7 +115,7 @@ namespace OpenAI.Responses
                 writer.WritePropertyName("result"u8);
                 writer.WriteBase64StringValue(ImageResultBytes.ToArray(), "D");
             }
-            else
+            else if (!Patch.Contains("$.result"u8))
             {
                 writer.WriteNull("result"u8);
             }

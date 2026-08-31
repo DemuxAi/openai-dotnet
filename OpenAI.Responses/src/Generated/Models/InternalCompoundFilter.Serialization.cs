@@ -13,7 +13,7 @@ namespace OpenAI.Responses
 {
     internal partial class InternalCompoundFilter : IJsonModel<InternalCompoundFilter>
     {
-        internal InternalCompoundFilter() : this(default, null, default)
+        public InternalCompoundFilter() : this(default, null, default)
         {
         }
 
@@ -83,7 +83,7 @@ namespace OpenAI.Responses
                 if (!Patch.IsRemoved("$.filters"u8))
                 {
                     writer.WritePropertyName("filters"u8);
-                    writer.WriteRawValue(Patch.GetJson("$.filters"u8));
+                    Patch.WriteTo(writer, "$.filters"u8);
                 }
             }
             else

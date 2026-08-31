@@ -13,7 +13,7 @@ namespace OpenAI.Responses
 {
     internal partial class InternalReasoningItemParam : InternalItemParam, IJsonModel<InternalReasoningItemParam>
     {
-        internal InternalReasoningItemParam() : this(ResponseItemKind.Reasoning, default, null, null)
+        public InternalReasoningItemParam() : this(ResponseItemKind.Reasoning, default, null, null)
         {
         }
 
@@ -84,7 +84,7 @@ namespace OpenAI.Responses
                 if (!Patch.IsRemoved("$.summary"u8))
                 {
                     writer.WritePropertyName("summary"u8);
-                    writer.WriteRawValue(Patch.GetJson("$.summary"u8));
+                    Patch.WriteTo(writer, "$.summary"u8);
                 }
             }
             else

@@ -12,7 +12,7 @@ namespace OpenAI.Responses
 {
     public partial class FunctionTool : ResponseTool, IJsonModel<FunctionTool>
     {
-        internal FunctionTool() : this(ResponseToolKind.Function, default, null, null, null, default)
+        public FunctionTool() : this(ResponseToolKind.Function, default, null, null, null, default)
         {
         }
 
@@ -95,7 +95,7 @@ namespace OpenAI.Responses
                 }
 #endif
             }
-            else
+            else if (!Patch.Contains("$.parameters"u8))
             {
                 writer.WriteNull("parameters"u8);
             }
@@ -104,7 +104,7 @@ namespace OpenAI.Responses
                 writer.WritePropertyName("strict"u8);
                 writer.WriteBooleanValue(StrictModeEnabled.Value);
             }
-            else
+            else if (!Patch.Contains("$.strict"u8))
             {
                 writer.WriteNull("strict"u8);
             }

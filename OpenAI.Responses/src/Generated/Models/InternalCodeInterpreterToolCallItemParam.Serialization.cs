@@ -13,7 +13,7 @@ namespace OpenAI.Responses
 {
     internal partial class InternalCodeInterpreterToolCallItemParam : InternalItemParam, IJsonModel<InternalCodeInterpreterToolCallItemParam>
     {
-        internal InternalCodeInterpreterToolCallItemParam() : this(ResponseItemKind.CodeInterpreterCall, default, null, null, null)
+        public InternalCodeInterpreterToolCallItemParam() : this(ResponseItemKind.CodeInterpreterCall, default, null, null, null)
         {
         }
 
@@ -89,7 +89,7 @@ namespace OpenAI.Responses
                 if (!Patch.IsRemoved("$.outputs"u8))
                 {
                     writer.WritePropertyName("outputs"u8);
-                    writer.WriteRawValue(Patch.GetJson("$.outputs"u8));
+                    Patch.WriteTo(writer, "$.outputs"u8);
                 }
             }
             else if (Optional.IsCollectionDefined(Outputs))

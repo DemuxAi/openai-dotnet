@@ -399,6 +399,20 @@ public class ChatSmokeTests : ClientTestBase
     }
 
     [Test]
+    public void SerializeChatMessageContentPartAsImageUriPreservesPercentEncoding()
+    {
+        const string uri = "https://example.com/folder/My%20File%20-%20Copy.webp";
+
+        ChatMessageContentPart part = ChatMessageContentPart.CreateImagePart(new Uri(uri), ChatImageDetailLevel.High);
+        BinaryData serializedPart = ModelReaderWriter.Write(part);
+        using JsonDocument partAsJson = JsonDocument.Parse(serializedPart);
+
+        Assert.That(partAsJson.RootElement.TryGetProperty("image_url", out JsonElement imageUrlProperty), Is.True);
+        Assert.That(imageUrlProperty.TryGetProperty("url", out JsonElement imageUrlUrlProperty), Is.True);
+        Assert.That(imageUrlUrlProperty.ToString(), Is.EqualTo(uri));
+    }
+
+    [Test]
     [TestCase(true)]
     [TestCase(false)]
     public void SerializeChatMessageContentPartAsImageBytes(bool fromRawJson)
@@ -1052,5 +1066,23 @@ public class ChatSmokeTests : ClientTestBase
         ChatMessageContentPart deserializedFilePart = ModelReaderWriter.Read<ChatMessageContentPart>(serializedFilePart);
 
         AssertExpectedFilePart(deserializedFilePart);
+    }
+
+    [Test]
+    public void DeserializingInvalidFileDataUriThrowsArgumentException()
+    {
+        BinaryData data = BinaryData.FromString("""
+            {
+              "type": "file",
+              "file": {
+                "filename": "broken.txt",
+                "file_data": "data:text/plain;base64,%%"
+              }
+            }
+            """);
+
+        Assert.That(
+            () => ModelReaderWriter.Read<ChatMessageContentPart>(data),
+            Throws.TypeOf<ArgumentException>());
     }
 }

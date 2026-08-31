@@ -1,5 +1,106 @@
 # Release History
 
+## 2.13.0 (2026-08-10)
+
+### Acknowledgments
+
+Thank you to our developer community members who helped to make the OpenAI client library better with their contributions to this release:
+
+- [@fallintoplace](https://github.com/fallintoplace)
+- [@hogeheer499](https://github.com/hogeheer499)
+
+### Features Added
+
+- Requests now include structured SDK platform metadata headers (`X-Stainless-Lang`, `X-Stainless-Package-Version`, `X-Stainless-Runtime`, `X-Stainless-Runtime-Version`, `X-Stainless-OS`, and `X-Stainless-Arch`), bringing the .NET library to parity with the other official OpenAI SDKs. These restate information already present in the `User-Agent` header in a machine-parseable form, plus the process CPU architecture, so consumers no longer need to parse the user agent string. Any value you set yourself is preserved. The `User-Agent` header itself is unchanged.
+- Added an opt-out for SDK telemetry, via the `OpenAI.DisableTelemetry` `AppContext` switch or the `OPENAI_DISABLE_TELEMETRY` environment variable. When enabled, the library sends neither the `X-Stainless-*` headers nor the `User-Agent` header that it would otherwise add. See [Telemetry and privacy](https://github.com/openai/openai-dotnet/blob/main/docs/Observability.md#telemetry-and-privacy) for details.
+
+### Bugs Fixed
+
+- OpenAI.Chat:
+  - Fixed an issue where creating Base64 data URIs from large image and file payloads could cause unnecessary memory pressure by copying the entire payload before encoding.
+- OpenAI.Conversations:
+  - Fixed an issue where multiple `include` values on conversation item list, create, and retrieve requests were incorrectly serialized as a single comma-delimited query value instead of repeated `include[]` parameters, causing requests to fail with HTTP 400 responses.
+- OpenAI.Responses:
+  - Fixed an issue where the `Kind` property of `ResponseContentPart` could not be set correctly.
+  - Fixed an issue where creating Base64 data URIs from large image and file payloads could cause unnecessary memory pressure by copying the entire payload before encoding.
+  - Fixed an issue where `Patch` would not propagate correctly through the `McpToolCallApprovalPolicy` and `CodeInterpreterToolContainer` types.
+
+### Other Changes
+
+- Relaxed the limit on `UserAgentApplicationId` from 24 characters to 512. Application identifiers up to that length are now accepted and passed through to the `User-Agent` header verbatim; longer values throw `ArgumentOutOfRangeException` when a client is created, so that the header cannot be inflated without bound. The identifier is ignored, and the limit not applied, when telemetry is disabled and no `User-Agent` will be sent.
+- OpenAI.Responses:
+  - Consolidated the experimental diagnostic used by the Computer Use tool types onto the standard `OPENAI001`. These types were previously marked with a dedicated `OPENAICUA001` code, which has been removed. Consumers who explicitly suppressed `OPENAICUA001` should suppress `OPENAI001` instead (the same code already used by the other experimental Responses APIs).
+
+## 2.12.0 (2026-06-30)
+
+### Acknowledgments
+
+Thank you to our developer community members who helped to make the OpenAI client library better with their contributions to this release:
+
+- [@thejesh23](https://github.com/thejesh23)
+- [@bymle](https://github.com/bymle)
+
+### Features Added
+
+- OpenAI.Containers:
+  - Added support for network policies.
+    - Added the `ContainerNetworkPolicy` type with the following derived types:
+      - `ContainerAllowlistNetworkPolicy`
+      - `ContainerDisabledNetworkPolicy`
+    - Added the `ContainerNetworkPolicyKind` extensible enum.
+    - Added the `ContainerNetworkPolicyDomainSecret` type.
+    - Added the `NetworkPolicy` property to `ContainerCreationOptions`.
+  - Added support for memory limits for containers.
+    - Added the `ContainerMemoryLimit` extensible enum.
+    - Added the `MemoryLimit` property to `ContainerCreationOptions`.
+  - Added support for listing containers filtered by name.
+    - Added the `Name` property to `ContainerCollectionOptions`.
+- OpenAI.Conversations:
+  - Added new conveniences to the `ConversationClient`:
+    - Added the `ConversationCreationOptions` type.
+    - Added the `ConversationUpdateOptions` type.
+    - Added the `ConversationDeletionResult` type.
+    - Added the `ConversationResource` type.
+    - Added new convenience methods to the `ConversationClient`:
+      - `CreateConversation` and `CreateConversationAsync`
+      - `DeleteConversation` and `DeleteConversationAsync`
+      - `GetConversation` and `GetConversationAsync`
+      - `UpdateConversation` and `UpdateConversationAsync`
+- OpenAI.Responses:
+  - Added support for cache keys and cache retention policies, used by OpenAI to cache responses for similar requests in order to optimize your cache hit rates.
+    - Added the `ResponsePromptCacheRetentionPolicy` extensible enum.
+    - Added the `PromptCacheKey` and `PromptCacheRetentionPolicy` properties to `CreateResponseOptions`.
+    - Added the `PromptCacheKey` and `PromptCacheRetentionPolicy` properties to `ResponseResult`.
+
+### Bugs Fixed
+
+- OpenAI.Chat:
+  - Fixed `ChatMessageContentPart.CreateImagePart(Uri)` incorrectly serializing `image_url.url` via `Uri.ToString()`, which would unescape percent-encoded characters (e.g., `%20` → space) and break downstream image fetches. The serialized URL now uses `Uri.AbsoluteUri` to preserve percent-encoding.
+
+### Other Changes
+
+- Updated the `System.ClientModel` dependency to version 1.14.0. For more information, see the [System.ClientModel changelog](https://github.com/Azure/azure-sdk-for-net/blob/System.ClientModel_1.14.0/sdk/core/System.ClientModel/CHANGELOG.md).
+
+### Breaking Changes in Experimental APIs
+
+- OpenAI.Containers:
+  - Renamed the following classes for consistency:
+    - Renamed `DeleteContainerResponse` to `ContainerDeletionResult`.
+    - Renamed `DeleteContainerFileResponse` to `ContainerFileDeletionResult`.
+    - Renamed `ContainerResourceExpiresAfter` to `ContainerExpirationPolicy`.
+    - Renamed `CreateContainerBody` to `ContainerCreationOptions`.
+  - Renamed the following properties for consistency:
+    - Renamed the `Minutes` property of `ContainerExpirationPolicy` to `Duration`.
+    - Renamed the `Id` property of `ContainerDeletionResult` to `ContainerId`.
+    - Renamed the `Id` property of `ContainerFileDeletionResult` to `ContainerFileId`.
+    - Renamed the `ExpiresAfter` property of `ContainerResource` to `ExpirationPolicy`.
+  - Changed the type of the `Anchor` property of `ContainerExpirationPolicy` from `string` to `ContainerExpirationPolicyAnchor?`.
+  - Changed the type of the `Duration` property of `ContainerExpirationPolicy` from `int` to `TimeSpan?`.
+  - Changed the type of the `ExpiresAfter` property of `ContainerResource` from `ContainerResourceExpiresAfter` to `ContainerExpirationPolicy`.
+  - Removed the `ContainerResourceExpiresAfter` class.
+- OpenAI.Conversations:
+  - Made the `options` parameter of type `RequestOptions` required for several methods in the `ConversationClient` in order to disambiguate the new overloads.
+
 ## 2.11.0 (2026-06-05)
 
 ### Acknowledgments

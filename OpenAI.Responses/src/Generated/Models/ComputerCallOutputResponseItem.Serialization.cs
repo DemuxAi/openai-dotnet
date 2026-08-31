@@ -13,7 +13,7 @@ namespace OpenAI.Responses
 {
     public partial class ComputerCallOutputResponseItem : ResponseItem, IJsonModel<ComputerCallOutputResponseItem>
     {
-        internal ComputerCallOutputResponseItem() : this(ResponseItemKind.ComputerCallOutput, null, default, default, null, null, null)
+        public ComputerCallOutputResponseItem() : this(ResponseItemKind.ComputerCallOutput, null, default, default, null, null, null)
         {
         }
 
@@ -91,7 +91,7 @@ namespace OpenAI.Responses
                 if (!Patch.IsRemoved("$.acknowledged_safety_checks"u8))
                 {
                     writer.WritePropertyName("acknowledged_safety_checks"u8);
-                    writer.WriteRawValue(Patch.GetJson("$.acknowledged_safety_checks"u8));
+                    Patch.WriteTo(writer, "$.acknowledged_safety_checks"u8);
                 }
             }
             else if (Optional.IsCollectionDefined(AcknowledgedSafetyChecks))
