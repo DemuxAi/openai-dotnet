@@ -13,7 +13,7 @@ namespace OpenAI.Realtime
 {
     public partial class RealtimeTranscriptionSession : RealtimeSession, IJsonModel<RealtimeTranscriptionSession>
     {
-        internal RealtimeTranscriptionSession() : this(InternalRealtimeSessionCreateResponseBaseTypeGA.Transcription, default, null, null, default, null, null)
+        public RealtimeTranscriptionSession() : this(InternalRealtimeSessionCreateResponseBaseTypeGA.Transcription, default, null, null, default, null, null)
         {
         }
 
@@ -219,6 +219,10 @@ namespace OpenAI.Realtime
 
             if (local.StartsWith("audio"u8))
             {
+                if (AudioOptions == null)
+                {
+                    return false;
+                }
                 return AudioOptions.Patch.TryGetEncodedValue([.. "$"u8, .. local.Slice("audio"u8.Length)], out value);
             }
             return false;
@@ -232,6 +236,10 @@ namespace OpenAI.Realtime
 
             if (local.StartsWith("audio"u8))
             {
+                if (AudioOptions == null)
+                {
+                    return false;
+                }
                 AudioOptions.Patch.Set([.. "$"u8, .. local.Slice("audio"u8.Length)], value);
                 return true;
             }

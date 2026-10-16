@@ -13,7 +13,7 @@ namespace OpenAI.Realtime
 {
     public partial class RealtimeMcpTool : RealtimeTool, IJsonModel<RealtimeMcpTool>
     {
-        internal RealtimeMcpTool() : this(InternalRealtimeToolBaseTypeGA.Mcp, default, null, null, default, null, null, null, null, null)
+        public RealtimeMcpTool() : this(RealtimeToolKind.Mcp, default, null, null, default, null, null, null, null, null)
         {
         }
 
@@ -163,7 +163,7 @@ namespace OpenAI.Realtime
             {
                 return null;
             }
-            InternalRealtimeToolBaseTypeGA kind = default;
+            RealtimeToolKind kind = default;
 #pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
             JsonPatch patch = new JsonPatch(data is null ? ReadOnlyMemory<byte>.Empty : data.ToMemory());
 #pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
@@ -179,7 +179,7 @@ namespace OpenAI.Realtime
             {
                 if (prop.NameEquals("type"u8))
                 {
-                    kind = new InternalRealtimeToolBaseTypeGA(prop.Value.GetString());
+                    kind = new RealtimeToolKind(prop.Value.GetString());
                     continue;
                 }
                 if (prop.NameEquals("server_label"u8))
@@ -238,12 +238,7 @@ namespace OpenAI.Realtime
                 }
                 if (prop.NameEquals("allowed_tools"u8))
                 {
-                    if (prop.Value.ValueKind == JsonValueKind.Null)
-                    {
-                        allowedTools = null;
-                        continue;
-                    }
-                    allowedTools = RealtimeMcpToolFilter.DeserializeRealtimeMcpToolFilter(prop.Value, prop.Value.GetUtf8Bytes(), options);
+                    DeserializeAllowedToolsValue(prop, ref allowedTools, options);
                     continue;
                 }
                 if (prop.NameEquals("require_approval"u8))
@@ -279,10 +274,18 @@ namespace OpenAI.Realtime
 
             if (local.StartsWith("allowed_tools"u8))
             {
+                if (AllowedTools == null)
+                {
+                    return false;
+                }
                 return AllowedTools.Patch.TryGetEncodedValue([.. "$"u8, .. local.Slice("allowed_tools"u8.Length)], out value);
             }
             if (local.StartsWith("require_approval"u8))
             {
+                if (ToolCallApprovalPolicy == null)
+                {
+                    return false;
+                }
                 return ToolCallApprovalPolicy.Patch.TryGetEncodedValue([.. "$"u8, .. local.Slice("require_approval"u8.Length)], out value);
             }
             return false;
@@ -296,11 +299,19 @@ namespace OpenAI.Realtime
 
             if (local.StartsWith("allowed_tools"u8))
             {
+                if (AllowedTools == null)
+                {
+                    return false;
+                }
                 AllowedTools.Patch.Set([.. "$"u8, .. local.Slice("allowed_tools"u8.Length)], value);
                 return true;
             }
             if (local.StartsWith("require_approval"u8))
             {
+                if (ToolCallApprovalPolicy == null)
+                {
+                    return false;
+                }
                 ToolCallApprovalPolicy.Patch.Set([.. "$"u8, .. local.Slice("require_approval"u8.Length)], value);
                 return true;
             }

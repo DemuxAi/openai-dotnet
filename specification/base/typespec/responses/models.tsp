@@ -1,8 +1,3 @@
-/*
- * This file was automatically generated from an OpenAPI .yaml file.
- * Edits made directly to this file will be lost.
- */
-
 import "@azure-tools/typespec-client-generator-core";
 
 using Azure.ClientGenerator.Core;
@@ -16,16 +11,25 @@ namespace OpenAI;
   
   Constrains effort on reasoning for
   [reasoning models](https://platform.openai.com/docs/guides/reasoning).
-  Currently supported values are `none`, `minimal`, `low`, `medium`, and `high`. Reducing
+  Currently supported values are `none`, `minimal`, `low`, `medium`, `high`, `xhigh`, and `max`. Reducing
   reasoning effort can result in faster responses and fewer tokens used
   on reasoning in a response.
   """)
 union ResponsesReasoningEffort {
-  "none",
-  "minimal",
-  "low",
-  "medium",
-  "high",
+  none: "none",
+  minimal: "minimal",
+  low: "low",
+  medium: "medium",
+  high: "high",
+  xhigh: "xhigh",
+  max: "max"
+}
+
+/** Controls how much reasoning context is preserved across turns. */
+union ResponsesReasoningContext {
+  "auto",
+  "current_turn",
+  "all_turns",
 }
 
 union ResponsesCompoundFilterType {
@@ -715,6 +719,9 @@ model ApproximateLocation extends Location {
 model Reasoning {
   effort?: ResponsesReasoningEffort | null = "medium";
 
+  /** Controls how much reasoning context is preserved across turns. */
+  context?: ResponsesReasoningContext | null;
+
   @doc("""
     A summary of the reasoning performed by the model. This can be
     useful for debugging and understanding the model's reasoning process.
@@ -1083,6 +1090,12 @@ model ResponseUsage {
      * [More on prompt caching](/docs/guides/prompt-caching).
      */
     cached_tokens: int32;
+
+    /**
+     * The number of input tokens newly written to the cache.
+     * [More on prompt caching](/docs/guides/prompt-caching).
+     */
+    cache_write_tokens: int32;
   };
 
   /** The number of output tokens. */
@@ -1664,7 +1677,6 @@ model DeleteResponseResponse {
   deleted: boolean;
 }
 
-
 @access(Access.public)
 @usage(Usage.input)
 model DotNetGetResponseOptions {
@@ -1677,7 +1689,7 @@ model DotNetGetResponseOptions {
 
 @access(Access.public)
 @usage(Usage.input | Usage.output)
-union DotNetGlobalToolCallApprovalPolicy {
+union DotNetDefaultToolCallApprovalPolicy {
   string,
   AlwaysRequireApproval: "always",
   NeverRequireApproval: "never",
@@ -1696,7 +1708,7 @@ model DotNetCustomToolCallApprovalPolicy {
 @access(Access.public)
 @usage(Usage.input | Usage.output)
 model DotNetToolCallApprovalPolicy {
-  global_policy?: DotNetGlobalToolCallApprovalPolicy;
+  default_policy?: DotNetDefaultToolCallApprovalPolicy;
   custom_policy?: DotNetCustomToolCallApprovalPolicy;
 }
 

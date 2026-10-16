@@ -13,7 +13,7 @@ namespace OpenAI.Realtime
 {
     public partial class RealtimeMcpToolDefinitionListItem : RealtimeItem, IJsonModel<RealtimeMcpToolDefinitionListItem>
     {
-        internal RealtimeMcpToolDefinitionListItem() : this(InternalRealtimeConversationItemTypeGA.McpListTools, default, null, null, null)
+        public RealtimeMcpToolDefinitionListItem() : this(RealtimeItemKind.McpListTools, default, null, null, null)
         {
         }
 
@@ -98,7 +98,7 @@ namespace OpenAI.Realtime
                 writer.WriteStartArray();
                 for (int i = 0; i < ToolDefinitions.Count; i++)
                 {
-                    if (ToolDefinitions[i].Patch.IsRemoved("$"u8))
+                    if (Patch.IsRemoved(Encoding.UTF8.GetBytes($"$.tools[{i}]")) || ToolDefinitions[i] != null && ToolDefinitions[i].Patch.IsRemoved("$"u8))
                     {
                         continue;
                     }
@@ -131,7 +131,7 @@ namespace OpenAI.Realtime
             {
                 return null;
             }
-            InternalRealtimeConversationItemTypeGA kind = default;
+            RealtimeItemKind kind = default;
 #pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
             JsonPatch patch = new JsonPatch(data is null ? ReadOnlyMemory<byte>.Empty : data.ToMemory());
 #pragma warning restore SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
@@ -142,7 +142,7 @@ namespace OpenAI.Realtime
             {
                 if (prop.NameEquals("type"u8))
                 {
-                    kind = new InternalRealtimeConversationItemTypeGA(prop.Value.GetString());
+                    kind = new RealtimeItemKind(prop.Value.GetString());
                     continue;
                 }
                 if (prop.NameEquals("id"u8))
@@ -180,11 +180,19 @@ namespace OpenAI.Realtime
             {
                 int propertyLength = "tools"u8.Length;
                 ReadOnlySpan<byte> currentSlice = local.Slice(propertyLength);
+                if (ToolDefinitions == null)
+                {
+                    return false;
+                }
                 if (currentSlice.IsEmpty)
                 {
                     return TryResolveToolDefinitionsArray(out value);
                 }
-                if (!currentSlice.TryGetIndex(out int index, out int bytesConsumed))
+                if (!currentSlice.TryGetIndex(out int index, out int bytesConsumed) || index >= ToolDefinitions.Count)
+                {
+                    return false;
+                }
+                if (ToolDefinitions[index] == null)
                 {
                     return false;
                 }
@@ -203,7 +211,15 @@ namespace OpenAI.Realtime
             {
                 int propertyLength = "tools"u8.Length;
                 ReadOnlySpan<byte> currentSlice = local.Slice(propertyLength);
-                if (!currentSlice.TryGetIndex(out int index, out int bytesConsumed))
+                if (ToolDefinitions == null)
+                {
+                    return false;
+                }
+                if (!currentSlice.TryGetIndex(out int index, out int bytesConsumed) || index >= ToolDefinitions.Count)
+                {
+                    return false;
+                }
+                if (ToolDefinitions[index] == null)
                 {
                     return false;
                 }
@@ -234,7 +250,7 @@ namespace OpenAI.Realtime
             }
             for (int i = 0; i < ToolDefinitions.Count; i++)
             {
-                if (!ToolDefinitions[i].Patch.IsRemoved("$"u8))
+                if (!Patch.IsRemoved(Encoding.UTF8.GetBytes($"$.tools[{i}]")) && (ToolDefinitions[i] == null || !ToolDefinitions[i].Patch.IsRemoved("$"u8)))
                 {
                     yield return ToolDefinitions[i];
                 }
